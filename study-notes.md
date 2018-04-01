@@ -83,3 +83,34 @@ Web Identity Federation with Mobile Applications
 2. you then get your temporary security credentials
 3. then you can call ```AssumeRoleWithWebIdentity``` with temp. security credentials which allows you to perform
 actions granted to that role
+
+
+
+## EC2
+### EC2 Instances
+* On Demand - you pay a fixed rate, by the hour (or second) with no commitment
+* Reserved - provide you with a capacity reservation and offer a significant discount on the hourly charge. 1 year or
+3 year terms
+* Spot - enable you to bid whatever price you want for an instance capacity, providing for greater savings if your
+applications have flexible start/end times
+* Dedicated Hosts - Physical EC2 server dedicated for your use. Dedicated hosts can help reduce costs by allowing you
+to use your existing server bound software licenses.
+
+### EC2 Instance Types
+**DR MCGIF PX**
+Family | Specialty | Use Case
+:-----:|:---------:|:--------:
+D2 | Dense Storage | File servers,Hadoop,Date warehousing
+R4 | Memory Optimized | memory intensive apps, DBs (R = RAM)
+M4 | General purpose | Application Servers
+C4 | Compute Optimized | CPU intensive apps (C=CPU)
+G2 | Graphics Intensive | Video Encoding, 3D app. streaming (G=graphics)
+I2 | High Speed Storage | NoSQL DBs, data warehousing (I=IOPS)
+F1 | Field Programmable Gate Array | hardware acceleration for your code (F=Field)
+T2 | lowest cost general purpose | web servers, small DBs
+P2 | graphics,general purpose GPU | machine learning, bit coins mining
+X1 | Memory Optimized | SAP HANA, Apache SPARK (X=Xtreme Memory Optimized)
+           
+
+### Exam
+* some exam questions will present different scenarios and ask you to pick cheapest/best option
