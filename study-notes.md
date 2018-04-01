@@ -185,11 +185,102 @@ root volume
 * inbound traffic is initially blocked by default
 * all outbound traffic initially allowed by default
 * any number of EC2 instances allowed within a security group
+
+### Elastic File System (not tested)
+* supports NFSv4 protocol
+* you only pay for storage you use
+* can scale up to petabytes
+* can support thousands of concurrent NFS connections
+* data is stored across multiple AZs within a region
+* read after write consistency
+
+### Identity Access Management (using Roles)
+* Roles are more secure than storing your access key and secret access key on EC2 instances
+* **It is possible to attach/replace a role to a running EC2 instance**
+* Roles are easier to manage
+* can add Policy documents to a Role at anytime, takes effect immediately
+* Roles are univeral, can be used in any region
+
+### EC2 CLI Commands for Developers
+* try to learn the general syntax that the commands use when *associating* something, or *detach* something, *copy* etc...
+* ```describe-instances``` - describe one or more of your EC2 instances
+* ```describe-images``` - list the images available to you, includes **all** public images by default (can take time to run)
+* ```start-instance``` - starts a **stopped** instance
+* ```run-instances``` - creates one or more EC2 instances using an AMI
+
+### EC2 Instance Meta-Data
+let's you get meta-data about the currently running EC2 instance
+* know the URL used to access instance meta-data (know the IP address:)
+    * **http://169.254.169.254/latest/meta-data/**
+* know how to get public IPV4 address using above URL:
+    * **http://169.254.169.254/latest/meta-data/public-ipv4**
+
+### Elastic Load Balancers (ELB)
+* know about the newer Application Load Balancer versus Classic Load Balancer
+* once an EC2 instance is out of service, the ELB will not send traffic to that instance
+* Application Load Balancer gives you a domain name to use, not a public IP, amazon manages the IPs
+    * you could register your own domain name to point to the ELB domain
+* **one subnet = one availability zone**
+* application load balancer operates at layer 7, classic operates at layer 4
+* health checks...check the instance help by talking to it
+
+### AWS SDKs
+* Available SDKs:
+    * Android
+    * iOS
+    * Java
+    * .Net
+    * Node.js
+    * PHP
+    * Python
+    * Ruby
+    * GO
+    * C++
+    * AWS Mobile SDK, AWS IoT Device SDK
+* default region for (some) SDKs is **US-EAST-1**
+
+### Lambda
+Lambda is a compute service where you can upload your code and create a Lambda function. Lambda takes care of
+provisioning and managing the servers you need to run your code. You don't have to worry about operating systems,
+patching, scaling etc...
+* Lambda encapsulates:
+    * Data Centers, Hardware, Protocols, High Level Languages, Operating Systems, Application Later/AWS APIs
+
+* You can use Lambda in the following ways:
+    * As an **event driven** compute service where Lambda runs your code in response to events
+        * Event Triggers:
+            * API Gateway
+            * AWS:IoT
+            * Alexa Skills Kit
+            * CloudFront
+            * CloudWatch Events
+            * CloudWatch Logs
+            * CodeCommit
+            * Cognito Sync Trigger
+            * DynamoDB
+            * S3
+            * SNS
+            * Kinesis (Capture, process, and store video streams for analytics and machine learning)
+    * as a **compute service** to run code in response to HTTP requests using Amazon API Gateway or API calls made
+    using AWS SDKs
+        * every HTTP request invokes a new (separate) Lambda function
+* Lambda can do things globally, you can use it to back-up S3 buckets to other buckets etc...
+* Lambda functions scale out automatically
+* Supported languages for developing Lambda functions:
+    * C#,GO,Java,NodeJS,Python
+* Your lambda function cannot execute for more than **5 minutes**
+* Lambda functions are independent, 1 event = 1 function
+* Lambda functions can trigger other Lambda functions, 1 event can trigger X other functions
+* know what AWS services are serverless: S3,API Gateway,Lambda,DynamoDB etc...
+    * EC2 is NOT serverless because YOU are managing and configuring server instances
+
+
      
 ### Exam Tips
 * some exam questions will present different scenarios and ask you to pick cheapest/best option
 * know differences between On Demand, Spot, Reserved, Dedicated Hosts
 * If AWS terminates the spot instance, you get the hour for free
+
 * EBS Consists of
 
 type | name | code | description
