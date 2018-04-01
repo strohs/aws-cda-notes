@@ -97,7 +97,7 @@ applications have flexible start/end times
 to use your existing server bound software licenses.
 
 ### EC2 Instance Types
-**DR MCGIF PX**
+
 Family | Specialty | Use Case
 :-----:|:---------:|:--------:
 D2 | Dense Storage | File servers,Hadoop,Date warehousing
@@ -111,6 +111,67 @@ T2 | lowest cost general purpose | web servers, small DBs
 P2 | graphics,general purpose GPU | machine learning, bit coins mining
 X1 | Memory Optimized | SAP HANA, Apache SPARK (X=Xtreme Memory Optimized)
            
+> Remember the acronym **DR MCGIF PX**
 
-### Exam
+### Elastic Block Storage (EBS)
+* allows you to create storage volumes and attach them to EC2 instances. Once attached you can create file systems on
+top of these volumes, run a DB, or use them in any other way you would use a block device. EBS volumes are places in a
+**specific availability zone (AZ)** where they are automatically replicated to protect you from the failure of a single
+component
+    * **these stay within an availability zone, they are not automatically replicated to different AZs
+
+#### EBS Volume Types
+* General Purpose SSD (GP2)
+    * balance both price and performance
+    * ratio of 3 IOPS per GB with up to 10,000 IOPS and the ability to burst up to 3000 IOPS for extended periods of
+    time for volumes at 3334 GB and above
+* Provisioned IOPS SSD (IO1)
+    * for I/O intensive applications such as large relational/NoSQL DBs
+    * use these if you need more than 10,000 IOPS
+    * can provision up to 20,000 IOPS per volume
+* Throughput Optimized HDD (ST1)
+    * Big Data, Data Warehouses, Log Processing
+    * Large amounts of sequential data
+    * **cannot be a boot volume**
+* Cold HDD (SC1)
+    * lowest cost storage for infrequently accessed workloads
+    * file server
+    * **cannot be a boot volume**
+* Magnetic (Standard)
+    * lowest cost per GB of all EBS volume types that is bootable
+    * ideal for workloads where data is accessed infrequently + applications where the lowest storage cost is important
+
+### EC2 Security Groups
+* virtual firewall
+* one EC2 instance can have multiple security groups
+* any change you make to a security group applies instantly
+* security group rules are **stateful**, if you add an inbound rule, an outbound rule is also added
+    * eg. added an inbound rule for HTTP, will also automatically add an outbound rule
+* security group inbound rules **cannot block or deny any traffic**
+    * they only **allow** traffic in
+        * Network Access Control Lists will let you deny traffic
+* inbound traffic is initially blocked by default
+* all outbound traffic initially allowed by default
+* any number of EC2 instances allowed within a security group
+     
+### Exam Tips
 * some exam questions will present different scenarios and ask you to pick cheapest/best option
+* know differences between On Demand, Spot, Reserved, Dedicated Hosts
+* If AWS terminates the spot instance, you get the hour for free
+* EBS Consists of
+
+type | name | code | description
+:---:|:---:|:---:|:---:
+SSD|General Purpose|GP2|up to 10,000 IOPS
+SSD|Provisioned IOPS|IO1|more than 10,000 IOPS
+HDD|Throughput Optimized|ST1|frequently accessed workloads
+HDD|Cold|SC1|less frequently accessed data
+HDD|Magnetic|Standard|cheap,infrequently accessed storage
+
+* you cannot mount 1 EBS volume to multiple EC2 instances, instead use Elastic File Service (EFS)
+* **remember that one subnet equals one availability zone, subnets cannot span availability zones**
+* termination protection is turned off by default, you must explicitly turn it on
+* on an EBS backed instance, the default action is for the root EBS volume to be deleted when the instance is terminated
+* EBS root volumes of your AMIs cannot be encrypted. You can use a third party tool (like BitLocker) to encrypt the
+root volume after creation of the volume
+    * additional volumes can be encrypted
