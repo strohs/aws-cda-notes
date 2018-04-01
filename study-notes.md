@@ -26,7 +26,7 @@ centralized control to your AWS account
 
 
 ## Security Token Service (STS)
-* grants users limited (and/or temporary) access to AWS resources
+* grants users limited (and temporary) access to AWS resources
 * users can come from 3 sources:
     * Federation (typically Active Directory, LDAP)
         * uses Security Assertion Markup Language (SAML)
@@ -298,3 +298,225 @@ HDD|Magnetic|Standard|cheap,infrequently accessed storage
 * EBS root volumes of your AMIs cannot be encrypted. You can use a third party tool (like BitLocker) to encrypt the
 root volume after creation of the volume
     * additional volumes can be encrypted
+
+
+## Simple Storage Service (S3)
+Simple storage service provides secure, durable, highly-scalable object storage. The date is spread across multiple
+devices and facilities
+
+### S3 Basics
+* S3 is object based (allows you to upload files)
+* Files can be from 0 Bytes to 5TB
+* files are stored in buckets
+* S3 is a universal namespace, names must be unique globally
+* S3 will automatically creates a DNS for your bucket
+    * https://s3[-us-east-1].amazonaws.com/yourbucketname
+        * part in square brackets my no longer by needed
+    * buckets are a universal namespace, cannot have duplicate bucket name across regions
+* when you successfully upload an object, you'll receive a HTTP 200 code
+* Built for 99.99% availability
+* Built for 99.999999999% durability (the eleven nines guarantee)
+* Tiered storage is available
+* Lifecycle management
+* Versioning
+* Encryption
+* you control access to your buckets using Access Control Lists (ACL) or Bucket Policies
+* by default, buckets and all objects stored in them are private
+
+### Data Consistency Model
+* **read after write consistency** for PUTS of new objects
+    * you'll be able to read the object immediately
+* Eventual consistency for **overwrite PUTS and DELETES (can take time to propagate)**
+* updates are **atomic** you'll either get the new data or else the old data
+
+### S3 is a simple key/value store
+* Key - the name of the object
+    * stored lexigraphically
+    * to improve performance you may want to add random letters to beginning of file name in order to spread your files
+    across S3 storage
+* Value - the object data (a sequence of bytes)
+* VersionID
+* Meta-Data
+* Sub-resources
+    * access control list
+    * ability to Torrent the file
+
+### S3 Storage Tiers/Classes
+* **S3** (aka S3 Standard)
+    * 99.99% availability and 99.999999999% durability
+    * designed to withstand loss of 2 facilities concurrently
+    * minimum object size 0KB
+* **S3-IA** (infrequently accessed)
+    * for data accessed less frequently but requiring rapid access when needed
+    * Lower fee than S3 but charged a retrieval fee
+    * **minimum object size 128KB**
+* **Reduced Redundancy Storage**
+    * designed to provide **99.99% durability** and 99.99% availability of objects over a given year
+    * useful for objects you can recreate (like thumbnail images)
+    * lower costs than options above
+* Glacier
+    * very cheap but used for archival only
+    * Takes 3-5 hours to restore
+
+### S3 Encryption
+* two main types of encryption
+    * Client Side encryption
+        * data is encrypted by owner before storing on S3
+    * Server-Side encryption:
+        * using Amazon S3 Managed Keys (SSE-S3)
+        * using KMS (SSE-KMS)
+        * using customer provided keys
+
+### Static Website Hosting
+* S3 can be used to host files for a **static** website
+    * no PHP,asp,servlets, etc, allowed
+* S3 will create a publicly available DNS for your site
+    * http://**bucketname**.s3-website-**us-east-1**.amazonaws.com
+        * NOTE that the static website names have *s3-website* in the name
+* What is a good scenario for static website hosting?
+    * a static site that needs to be scalable and handle lots of requests
+        * like a site for a major blockbuster movie release
+
+#### Cross Origin Resource Sharing (CORS)
+* way of allowing resource/code in one S3 bucket to access a resource in another S3 bucket
+* have to enable CORS in the **bucket that is being called** (the bucket containing the resource) and then configure
+the URL for the origin that will be calling the bucket
+
+### S3 Versioning
+* **Once versioning is enabled for a bucket, it cannot be disabled**
+* stores all versions of an object (including writes)
+* integrates with lifecycle rules
+* Multi-Factor Authentication delete capability is available for extra layer of security
+
+### Cross Region Replication
+* deleting object in source bucket **does not delete** it in replicated bucket
+* **versioning must be enabled on both source and destination buckets**
+* Regions must be unique
+* files in an **existing** bucket are not replicated automatically
+    * all subsequent uploaded files will be replicated automatically
+* you cannot replicate to multiple buckets or use daisy chaining (at this time)
+* understand what cross region replication is at a high level
+
+### Lifecycle management S3-IA and Glacier
+* can be used in conjunction with versioning
+* can be applied to current versions and previous versions
+* the following actions can now be done with lifecycle management:
+    1. Transition to Standard-IA
+        * 128KB min file size
+        * 30 days after creation
+    2. Archive to Glacier storage
+        * 30 days after being stored in Standard-IA
+    3. permanently delete objects
+
+
+### Cloudfront Overview
+AWS CloudFront is a Content Delivery Network (CDN):
+* a system of distributed servers that deliver webpages and other web content to a user based on the geographic
+locations of the user, the origin of the webpage and a content delivery server
+
+* *Edge Location*
+    * the location where content will be cached. This is separate to an AWS Region/AZ
+    * edge locations are not just **Read Only**, you can write to them too
+    * objects are cached for the life of the Time-To-Live (TTL)
+    * you can force a clear of the cached objects, but you will be charged
+* *Origin*
+    * this is the origin of all files that the CDN will distribute. Cloudfront is optimized to work with:
+        * S3 bucket
+        * EC2 instance
+        * Elastic Load Balancer
+        * Route53
+    * **origin can also be a non-AWS server** (e.g. a web-server you own on-premise)
+* *Distribution*
+    * the name given to the CDN which consists of a collection of edge locations
+        * you can have multiple origins
+
+#### CloudFront Key Terminology
+* **Web Distribution** - typically used for websites
+* **RTMP** - used for media streaming
+
+#### Creating a CDN (done in a lab)
+* know that you can configure the Default TTL (it defaults to 24 hours), you can change it if you have content that
+needs to expire quickly
+* you can restrict use access to content using **Signed URLs** or **Signed Cookies**
+* Geographic Restrictions
+    * you can whitelist and blacklist geographic locations (by country) so that they can/cannot view your content
+* Invalidations
+    * removes objects from the CloudFront edge caches.
+    * scenario: you need to immediately remove something from the cache and can't wait for the TTL to expire it
+
+### S3 Security and Encryption
+* all newly created buckets are private
+* You can setup access control to your buckets using:
+    * Bucket Policies
+        * applied to entire bucket
+    * Access Control Lists
+* S3 buckets can be configured to create access logs which will log all requests made to the S3 bucket
+
+#### Encryption
+Types of Encryption in S3
+* *In-Transit* encryption
+    * when sending data across the wire to the bucket
+    * uses SSL/TLS (e.g. HTTPS)
+* *At Rest* encryption
+    * Server Side Encryption 
+        * **S3 Managed Keys (SSE-S3)**
+            * uses AES-256
+            * Amazon handles the keys for you
+        * **AWS Key Management Service (SSE-KMS)**
+            * similar to SSE-S3 but more costly
+            * managed by Amazon and also provides an audit trail (who used keys to access what)
+        * **Customer Provided Keys (SSE-C)**
+            * you manage encryption keys
+* *Client Side Encryption*
+    * you encrypt data on your client then upload it to S3
+
+### Storage Gateway
+A service that connects an on premises software appliance with AWS cloud-based storage. This service allows you to
+securely store data to the AWS cloud for scalable and cost effective storage. There are 4 types of Storage Gateway
+offered.
+
+#### For Exam
+* **File Gateway**
+    * for flat files stored on S3
+* **Volume Gateway**
+    * block storage (uses iSCSI)
+    * two types of volume gateway offered:
+        * **Stored Volumes**
+            * entire dataset is stored onsite and is asynchronously backed up to S3
+        * **Cached Volumes**
+            * entire dataset is in S3, and only most frequently accessed data is cached onsite
+* **Gateway Virtual Tape Library (VTL)**
+    * for backup, but uses popular backup appliances like NetBackup,Backup Exec, Veam, etc....
+* Exam may present you with scenario questions and ask you to choose the best option from among the 4 gateway types
+
+
+### Snowball
+A physical data transfer device, for transporting data to Amazon, so they can store it AWS. It looks like a cube style
+PC case with handles on the top. Snowball can import data to/from S3
+
+* Replacement for Amazon's *import/export* service
+    * customers would send in (mail) all manner of hard-drives and tapes for amazon to backup for them
+    * all the different types of hardware was a nightmare for Amazon to manage
+* 3 Types of Snowballs offered:
+    * Snowball
+        * just onboard storage
+    * Snowball Edge
+        * onboard storage plus compute capacity
+        * like a mini data-center
+        * can run lambda from them
+    * Snowmobile
+        * peta byte or exo-byte levels of data
+        * this is driven to your site on a 18-wheeler truck
+
+### S3 Transfer Acceleration
+* Utilizes CloudFront edge network to accelerate your uploads to S3. 
+* Instead of uploading directly to an S3 bucket, you can use a distinct URL to upload to an edge location, 
+which will in turn transfer to S3. 
+* Remember **You get a distinct URL for uploading to your bucket**
+
+### S3 Section Notes
+* S3   website URL: http://mybucketname.**s3-website**.us-east-1.amazonaws.com
+* direct S3 bucket: http://s3.[us-east-1].amazonaws.com/mybucketname
+* You can upload big files to S3 using multi-part upload
+    * 5MB to 5TB in size
+* You can upload up to **5GB** in a **single operation**   
