@@ -141,6 +141,38 @@ component
     * lowest cost per GB of all EBS volume types that is bootable
     * ideal for workloads where data is accessed infrequently + applications where the lowest storage cost is important
 
+#### Upgrading EBS Volumes
+* EBS volumes and EC2 instances have to be in **same** availability zone in order to mount them
+* you can upgrade/modify EBS volumes for an EC2 instance on the fly
+    * **cannot modify STANDARD MAGNETIC storage once configured for an instance**
+* Exam Scenario:
+    * suppose you have a EC2 instance and EBS volume in one AZ. How do you recreate the the EC2 instance and volume in
+    another AZ?
+        1. take a snaphot of the volume(s) and then recreate the volume(s) from the snapshot in a new AZ.
+        2. attach your new EC2 instance to that volume
+* How do you move an EBS volume to a new region?
+    * create an image or snapshot, then use *copy* command to copy it to a new region
+* snapshots are typically used for backups, Images are used to create(or recreate) new EC2 instances
+* root device is where your operating system is installed
+* snapshots exists on S3, they are stored there
+* snapshots are incremental, only the blocks that have changed since your last snapshot are moved to S3
+* to create a snapshot for EBS root volumes, you *should* stop the instance before taking the snapshot, but you *could*
+take the snapshot while the instance is running
+* you can create AMIs from both volumes and snapshots
+* snapshots of encrypted volumes are encrypted automatically
+* volumes restored from encrypted snapshots are encrypted automatically
+* you can share snapshots, but only if they are unencrypted
+* AMIs are regional, you can only launch an AMI from the region in which it is stored
+
+#### EBS versus Instance Store
+Instance Store is where hard disks are physically stored at/on the host computer (reduces latency)
+* instance store volumes are sometimes called ephemeral storage
+* instance store volumes cannot be stopped. If the underlying host fails, you lose the data
+* EBS backed instances can be stopped, you will not lose the data if stopped
+* you can reboot both storage types and will not lose the data
+* by default both root volumes will be deleted on termination, however with EBS volumes you can tell AWS to keep the
+root volume
+
 ### EC2 Security Groups
 * virtual firewall
 * one EC2 instance can have multiple security groups
