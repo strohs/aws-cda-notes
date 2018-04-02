@@ -519,4 +519,45 @@ which will in turn transfer to S3.
 * direct S3 bucket: http://s3.[us-east-1].amazonaws.com/mybucketname
 * You can upload big files to S3 using multi-part upload
     * 5MB to 5TB in size
-* You can upload up to **5GB** in a **single operation**   
+* You can upload up to **5GB** in a **single operation**
+
+
+## Databases 101
+AWS offers the following Database (DB) services:
+* RDS
+    * Relational Database
+    * Suitable for Online Transaction Processing (OLTP)
+    * AWS offers the following implementations
+        * Microsoft SQL Server
+        * Oracle
+        * MySQL
+        * MariaDB
+        * PostgreSQL
+        * Aurora (Amazon developed DB)
+* DynamoDB
+    * NoSQL Database
+    * covered heavily in Developer Associate Exam
+* ElastiCache
+    * in memory cache service
+    * AWS offers the following implementations
+        * memcache
+        * redis
+* Redshift
+    * data warehousing DB
+    * used for Online Analytics Processing (OLAP)
+    
+### Data Warehousing
+* used for business intelligence in order to analyze large amounts of data (OLAP)
+* Online Analytics Processing (OLAP)
+    * eg. net profit for EMEA and Pacific for some product
+* Data warehousing DBs use different types of architecture, both from a DB perspective and infrastructure layer
+
+### ElastiCache
+* Exam Scenario question: you may get a question asking how to improve DB performance for frequently accessed queries.
+The answer could be to setup ElastiCache to cache those queries
+
+### Data Migration Services (DMS)
+* Service that migrates your production DB to AWS
+* can migrate a legacy DB (eg Oracle) to a new DB vendor (eg MySQL)
+* can be done while your production DB is running
+* handles the conversion of Schemas, views, stored procedures, etc.. to the target DB format
