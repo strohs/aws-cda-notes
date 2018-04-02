@@ -561,3 +561,105 @@ The answer could be to setup ElastiCache to cache those queries
 * can migrate a legacy DB (eg Oracle) to a new DB vendor (eg MySQL)
 * can be done while your production DB is running
 * handles the conversion of Schemas, views, stored procedures, etc.. to the target DB format
+
+
+
+## Dynamo DB
+A fast and flexible NoSQL database service for all applications that need consistent, single-digit millisecond latency
+ at any scale. It is a fully managed DB and supports both document and key-value data models. Its flexible data
+ model and reliable performance make it a great fit for mobile, gaming, web etc...
+
+### DynamoDB 101
+* stored on SSDs
+* spread across 3 geographically distinct data-centers
+* Eventually Consistent Reads (default) 
+    * best read response
+    * consistency across all copies of data is usually reached within a second
+    * repeating a read after a short time should return the updated data
+* Strongly Consistent Reads
+    * slower read performance
+    * returns a result that reflects all writes that received a successful response prior to the read
+* you can export a DynamoDB table (or selected items) to a .CSV file
+* can update your DynamoDB table capacity on the fly
+    * "push button capacity scaling"
+
+
+### DynamoDB Data Model
+* Tables
+* Items
+    * like a row of data in a RDB
+    * aggregate size of an item, including all the attribute names and attribute values, **cannot exceed 400KB**
+* Attributes
+    * like a columns of data in a RDB
+            
+
+### DynamoDB Key Types
+* Primary Keys (two types)
+    * Single Attribute key
+        * consists of a unique ID
+        * *Partition Key* (most common key type)
+            * a hash key composed of **one attribute**
+            * DynamoDB uses the partition keys value as input to a hash function. The output of the hash function
+            determines the partition on which data is to be stored
+            * **no two items in a table can have the same partition key value!**
+    * Composite key
+        * a unique key plus a *range* key
+        * **Partition Key + Sort Key** (composed of two attributes)
+            * a hash and a range 
+            * uses the partition key to determine the partition location, but two items can have the same partition
+            key; however, **they must have a different sort key**
+            * **all items with same partition key are stored together, in sorted order, by sort key value**
+
+### DynamoDB Indexes
+Many applications might benefit from having one or more **secondary** (or alternate) keys available to allow efficient 
+access to data with attributes other than the primary key. To address this, you can create one or more secondary 
+indexes on a table. Dynamo Supports two types:
+* Local Secondary Index (LSI)
+    * has the **same** partition key as the table but different sort key
+    * can **only** be created when creating a table
+    * cannot be removed or modified after table creation
+    * A local secondary index is "local" in the sense that every partition of a local secondary index is scoped to a 
+    table partition that has the same partition key
+    * LSIs limit the total size of all elements (tables and indexes) to 10 GB per partition key value
+* Global Secondary Index (GSI)
+    * an index with a partition or a partition-and-sort key that can be **different** from those on the table
+    * can be created at table creation time or added later
+    * can create a maximum of 5 global secondary indexes per table
+    * GSIs do not enforce data co-location, or a maximum partition size (unlike LSIs)
+    * A global secondary index is considered "global" because queries on the index can span all items in a table, 
+    across all partitions
+
+### DynamoDB Streams
+* captures any kind of modification of the DynamoDB tables
+    * if a new item is added to the table, the stream captures an image of the entire item, including all its attributes
+    * if an item is updated, the stream captures the *before* and *after* image of any attributes that were modified
+    in the item
+    * if any item is deleted from the table, the stream captures an image of the entire item before it was deleted
+* data is stored in DynamoDB streams for 24 hours
+    * you can process the data during this time using e.g. Lambda
+
+### DynamoDB Query vs Scan
+#### Queries
+* a query operation finds items in a table using only primary key attribute values. You must provide a partition
+attribute name and distinct value to search for.
+* you can optionally provide a sort key attribute name and value and use a comparison operator to refine search results
+* By default, a query returns all of the data attributes for items with the specified primary keys; however, you can
+use **ProjectionExpression** parameter so that the query only returns some of the attributes rather than all of them
+* Query results are always sorted by the sort key. If the data type of the sort key is a number, the results are
+returned in numeric order; otherwise, the results are returned in order of the ASCII character code values. By default
+the sort order is ascending, to reverse the order, set the **ScanIndexForward** parameter to **false**
+* by default, queries are always eventually consistent but can be changed to strongly consistent
+
+#### Scans
+* a scan operation examines every item in the table and returns all of the data attributes for every item. However,
+you can use the **ProjectionExpression** parameter so that the scan only returns some of the attributes, rather than
+all of them
+
+#### What to use? Query vs Scan?
+* Generally a query is more efficient than a Scan
+* A Scan always scans the entire table then filters out values to provide the desired result, eventually adding the
+extra step of removing data from the result set. Avoiding using scan operation on a large table with a filter that
+removes many results, if possible. Also, as a table grows, the scan slows. The scan operation examines every item for
+the requested values and can use up the provisioned throughput for a large table in a single operation
+* For quicker response times, design your tables in a way that can use the *Query*,*Get*, or *BatchGetItem* APIs.
+Alternatively, design you application to use scan operations in a way that minimized impact on your tables request rate
