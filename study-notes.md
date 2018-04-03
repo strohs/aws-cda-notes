@@ -87,7 +87,8 @@ actions granted to that role
 
 
 
-# EC2
+EC2
+=====================================================================
 ### EC2 Instances
 * On Demand - you pay a fixed rate, by the hour (or second) with no commitment
 * Reserved - provide you with a capacity reservation and offer a significant discount on the hourly charge. 1 year or
@@ -301,7 +302,8 @@ root volume after creation of the volume
     * additional volumes can be encrypted
 
 
-# Simple Storage Service (S3)
+imple Storage Service (S3)
+=============================================================
 Simple storage service provides secure, durable, highly-scalable object storage. The date is spread across multiple
 devices and facilities
 
@@ -523,7 +525,8 @@ which will in turn transfer to S3.
 * You can upload up to **5GB** in a **single operation**
 
 
-# Databases 101
+Databases 101
+==========================================
 AWS offers the following Database (DB) services:
 * RDS
     * Relational Database
@@ -565,7 +568,8 @@ The answer could be to setup ElastiCache to cache those queries
 
 
 
-# Dynamo DB
+Dynamo DB
+=========================================================
 A fast and flexible NoSQL database service for all applications that need consistent, single-digit millisecond latency
  at any scale. It is a fully managed DB and supports both document and key-value data models. Its flexible data
  model and reliable performance make it a great fit for mobile, gaming, web etc...
@@ -752,3 +756,110 @@ set the write throughput to?
     3. Your code calls ```AssumeRoleWithIdentity``` API and provides the providers token and specifies the ARN for the
     IAM role
     4. App can now access DynamoDB from between 15 minutes to 1 hour (default is 1 hour)
+
+
+### Other important aspects of DynamoDB
+* (E) Conditional Writes
+    * update an item if some conditional statement is true
+        * if item = $10 then update it to $12
+    * conditional writes are idempotent
+        * you can send the same conditional writes request multiple times, but it will have no further effect on the
+        item after the first time DynamoDB performs the specified update
+* (E) AtomicCounters
+    * you use ```UpdateItem``` operation to increment or decrement the value of an existing attribute without interfering
+    with other write requests
+        * **all write requests are applied in the order in which they are received**
+    * eg. a website visitor counter that you want to increment regardless of its current value
+    * AtomicCounters are **NOT** idempotent
+        * Each call to ```UpdateItem``` will perform the update
+            * if you suspect an update failed, then each call to UpdateItem could potentially update the item again
+        * NOT suitable for banking applications, safer to use Conditional update
+* (E) Scenario Question
+    * exam might ask if you should be using Conditional Writes or AtomicCounters
+    * **ask yourself is it critical that the data has to be correct, or can you have margin of error**
+* (E) Batch Operations
+    * if your application needs to read multiple items, you can use ```BatchGetItem``` API. 
+    * A single ```BatchGetItem``` request can retrieve up to 16MB of data, which can contain as many as 100 items. 
+    * In addition, a single ```BatchGetItem``` request can retrieve items from multiple tables
+
+
+Simple Queue Service (SQS)
+==============================================================================================================
+## Overview
+* SQS is a web service that gives you access to a message queue that can be used to store messages while waiting for a 
+computer to process them. 
+* SQS is a distributed queue system that enables web service applications to quickly and reliably queue messages that 
+component in the application generates to be consumed by another component. A queue is a temporary repository for 
+messages that are awaiting processing.
+* Using SQS, you can decouple the components of an application so they run independently, with Amazon SQS easing 
+message management between components. Any component of a distributed application can store messages in a fail-safe 
+queue
+* (E) Messages can contain of to **256KB** of text in any format. Any component can later retrieve the messages 
+programmatically using the SQL API.
+* The queue acts as a buffer between the component producing and saving data, and the component receiving the data
+for processing. This means the queue resolves issues that arise if the producer is producing work faster than 
+the consumer can process it, or if the producer or consumer are only intermittently connected to the network
+* SQS ensures delivery of each message at least once, and supports multiple readers and writers interacting with
+the same queue
+* A single queue can be used simultaneously by many distributed application components, with no need for those
+components to coordinate with each other to share the queue   
+* SQS is engineered to always be available and deliver messages. One of the resulting tradeoffs is that SQS does
+not guarantee FIFO delivery of messages. For many distributed applications, each message can stand on its own, and
+as long as all messages are delivered, the order is not importan
+* If your system requires that order be preserved, you can place sequencing information in each message, so that
+you can reorder the messages when the queue returns them
+
+
+
+### Example
+* suppose you have a number of image files to encode. In an SQS worker queue you create an Amazon SQL message for
+each file specifying the command (jpeg-encode) and the location of the file in Amazon S3
+* A pool of Amazon EC2 instances running the needed image processing software does the following:
+    1. Asynchronously **pulls** task messages from the queue
+        * (E) The **visibility timeout clock** starts once the message is pulled by the worker
+    2. Retrieves the named file
+    3. Does the conversion of the image
+    4. Writes the image back to Amazon S3
+    5. Writes a *task complete* message to another queue
+    6. Deletes the original task message
+        * (E) The message is considered successfully processed once this deletion step occurs
+        * If the deletion step does not happen, then the visibility timeout clock will expire and the message will
+        become re-available for processing by another worker
+    7. Checks for more messages in the worker queue
+
+### Billing
+* Billed at 64KB *chunks*
+    * message size will be 4 * 64KB chunks
+    * Each 64KB chunk of payload is billed as 1 request. For example, a single API call with a 256KB payload will be
+    billed as 4 requests
+
+
+## SQS Developer Exam Tips
+* SQS can be auto-scaled
+* SQS is engineered to provide "at least once" delivery of all messages in its queues. Although most of the time each
+message will be delivered to your application exactly once, you should design your system so that processing a message
+more than once does not create any errors or inconsistencies
+* messages size is 256KB
+
+* SQS Messages can be delivered multiple times and **in any order**
+    * if you need priority of one type of message over another, you would create a separate queue for those priority
+    messages
+* 12 hours visibility is MAXIMUM time out (default is 30 seconds)
+    * If the default timeout is insufficient for processing a particular message, you can call 
+    ```ChangeMessageVisibility``` action to specify a new timeout value. SQS will restart the timeout period using 
+    the new value
+* Long Polling
+    * SQS Long polling is a way to retrieve messages from your SQS queues. While the traditional SQS short polling returns
+    immediately, even if the queue being polled is empty, SQL long polling doesn't return a response until a message
+    arrives in the queue, or the long poll times out. SQS long polling makes it easy and inexpensive to retrieve messages
+    from your SQS queue as soon as they are available.
+    * **MAX poll time out = 20 seconds**
+    * Long polling is a way to save you money, especially if a queue is empty
+* Fanning Out
+    * Create an SNS topic first using SNS. Then create and subscribe multiple SQS queues to the SNS topic
+    * Now whenever a message is sent to the SNS topic, the message will be fanned out to the SQL queues, 
+        * i.e. SNS will deliver the message to all the SQS queues that are subscribed to the topic
+    * fanning out is a technique to distribute a message coming in on a single queue, onto N number of queues
+
+
+
