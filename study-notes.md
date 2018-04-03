@@ -24,6 +24,11 @@ centralized control to your AWS account
   * policies - a document that defines one or more permissions (uses JSON). Policies define what a principal can do in
   your AWS environment.
 
+### EXAM
+* **IAM is global, not tied to any AWS Region**
+* **Access Key ID and Secret Access Key are only used for programmatic access to AWS**
+* **new users have no permissions when first created**
+
 
 ## Security Token Service (STS)
 * grants users limited (and temporary) access to AWS resources
@@ -46,28 +51,24 @@ domain (such as Facebook, Active Directory, LDAP)
 * Identity Store - services like Facebook,Active Directory,Google,etc...
 * Identities - a user of a service (like Facebook)
 
-### EXAM
-* **IAM is global, not tied to any AWS Region**
-* **Access Key ID and Secret Access Key are only used for programmatic access to AWS**
-* **new users have no permissions when first created**
-
-Scenario 1 (using user credentials)
+#### Scenario 1 (gets user credentials from LDAP, and sends those to AWS STS)
 1. Develop an Identity Broker to communicate with LDAP and AWS STS (you develop this in house)
 2. Identity Broker always authenticates with **LDAP first, then with AWS STS**
 3. Application then gets temporary access to AWS resources
 
-Scenario 2 (using roles rather than user credentials)
+#### Scenario 2 (gets predefined IAM role from LDAP, and uses that to work with AWS resources)
 1. develop an Identity Broker to communicate with LDAP and AWS STS
 2. Identity Broker always authenticates with LDAP first, gets a IAM role associated with a user (from LDAP)
 3. application then authenticates with STS and assumes that IAM Role
 4. application uses that IAM Role to interact with S3 (or some other AWS resource)
 
-Active Directory Federation (with SAML)
-1. You can authenticate with Active Directory using SAML
-2. Authenticate with Active Directory first
-3. then get a temporary security credential
+### Active Directory Federation (with SAML)
+This is a Single Sign On scenario. A user can log into the AWS console from a link on their corporate intranet which
+then transparently logs them into the AWS console. Uses SAML behind the scenes to do this
+1. (E) You can authenticate with Active Directory using **SAML**
+2. (E) Authenticate with Active Directory first and then get a temporary security credential
 
-Web Identity Federation with Mobile Applications
+### Web Identity Federation with Mobile Applications
 * need to know that you can authenticate your applications using providers such as Facebook,Google,Amazon.com,etc...
 * **you'll be tested on how you are authenticating**
     * example 1
