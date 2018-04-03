@@ -571,7 +571,7 @@ A fast and flexible NoSQL database service for all applications that need consis
 
 ### DynamoDB 101
 * stored on SSDs
-* spread across 3 geographically distinct data-centers
+* spread across three facilities in an AWS Region
 * Eventually Consistent Reads (default) 
     * best read response
     * consistency across all copies of data is usually reached within a second
@@ -579,7 +579,7 @@ A fast and flexible NoSQL database service for all applications that need consis
 * Strongly Consistent Reads
     * slower read performance
     * returns a result that reflects all writes that received a successful response prior to the read
-* you can export a DynamoDB table (or selected items) to a .CSV file
+* (E) you can export a DynamoDB table (or selected items) to a .CSV file
 * can update your DynamoDB table capacity on the fly
     * "push button capacity scaling"
 * DynamoDB supports nested attributes up to 32 levels deep.
@@ -593,7 +593,7 @@ A fast and flexible NoSQL database service for all applications that need consis
     * like a row of data in a RDB
     * aggregate size of an item, including all the attribute names and attribute values, **cannot exceed 400KB**
 * Attributes
-    * like a columns of data in a RDB
+    * like columns of data in a RDB
             
 
 ### DynamoDB Key Types
@@ -609,15 +609,15 @@ A fast and flexible NoSQL database service for all applications that need consis
         * composed of two attributes:
             * **Partition Key + Sort Key**
                 * a hash and a range 
-                * uses the partition key to determine the partition location, but two items can have the same partition
-                key; however, **they must have a different sort key**
+                * uses the partition key to determine the partition location
+                    * two items can have the same partition key; however, **they must have a different sort key**
                 * **all items with same partition key are stored together, in sorted order, by sort key value**
 
 ### DynamoDB Indexes
 Many applications might benefit from having one or more **secondary** (or alternate) keys available to allow efficient 
 access to data with attributes other than the primary key. To address this, you can create one or more secondary 
 indexes on a table. Dynamo Supports two types:
-* Local Secondary Index (LSI)
+* (E) Local Secondary Index (LSI)
     * has the **same** partition key as the table but different sort key
     * can **only** be created when creating a table
     * cannot be removed or modified after table creation
@@ -625,7 +625,7 @@ indexes on a table. Dynamo Supports two types:
     * A local secondary index is "local" in the sense that every partition of a local secondary index is scoped to a 
     table partition that has the same partition key
     * LSIs limit the total size of all elements (tables and indexes) to 10 GB per partition key value
-* Global Secondary Index (GSI)
+* (E) Global Secondary Index (GSI)
     * an index with a partition or a partition-and-sort key that can be **different** from those already on the table
     * can be created at table creation time or added later
     * can create a maximum of 5 global secondary indexes per table
@@ -644,19 +644,19 @@ indexes on a table. Dynamo Supports two types:
 
 ### DynamoDB Query vs Scan
 #### Queries
-* a query operation finds items in a table using only primary key attribute values. You must provide a partition
+* (E) a query operation finds items in a table using only primary key attribute values. You must provide a partition
 attribute name and distinct value to search for.
 * you can optionally provide a sort key attribute name and value and use a comparison operator to refine search results
-* By default, a query returns all of the data attributes for items with the specified primary keys; however, you can
-use **ProjectionExpression** parameter so that the query only returns some of the attributes rather than all of them
-* Query results are always sorted by the sort key. If the data type of the sort key is a number, the results are
+* (E) By default, a query returns all of the data attributes for items with the specified primary keys; however, you can
+use ```ProjectionExpression``` parameter so that the query only returns some of the attributes rather than all of them
+* (E) Query results are always sorted by the sort key. If the data type of the sort key is a number, the results are
 returned in numeric order; otherwise, the results are returned in order of the ASCII character code values. By default
-the sort order is ascending, to reverse the order, set the **ScanIndexForward** parameter to **false**
+the sort order is ascending, to reverse the order, set the ```ScanIndexForward``` parameter to **false**
 * by default, queries are always eventually consistent but can be changed to strongly consistent
 
 #### Scans
-* a scan operation examines every item in the table and returns all of the data attributes for every item. However,
-you can use the **ProjectionExpression** parameter so that the scan only returns some of the attributes, rather than
+* (E) a scan operation examines every item in the table and returns all of the data attributes for every item. However,
+you can use the ```ProjectionExpression``` parameter so that the scan only returns some of the attributes, rather than
 all of them
 
 #### What to use? Query vs Scan?
@@ -665,7 +665,7 @@ all of them
 extra step of removing data from the result set. Avoiding using scan operation on a large table with a filter that
 removes many results, if possible. Also, as a table grows, the scan slows. The scan operation examines every item for
 the requested values and can use up the provisioned throughput for a large table in a single operation
-* For quicker response times, design your tables in a way that can use the *Query*,*Get*, or *BatchGetItem* APIs.
+* For quicker response times, design your tables in a way that can use the ```Query```,```Get```, or ```BatchGetItem``` APIs.
 Alternatively, design you application to use scan operations in a way that minimized impact on your tables request rate
 
 
@@ -680,7 +680,7 @@ Alternatively, design you application to use scan operations in a way that minim
 
 ### The Magic Formula
 #### Read units
-* **(Size of Read rounded to nearest 4KB chunk / 4KB) * num of items = read throughput**
+* (E) **(Size of Read rounded to nearest 4KB chunk / 4KB) * num of items = read throughput**
     * **Divide by 2 if eventually consistent**
 
 * Example 1 - You have an application that requires to read 10 items (a row in DynamoDB) of 1KB per second using 
@@ -737,5 +737,17 @@ set the write throughput to?
 
 
 * What happens if you exceed your write or read throughput?
-    * 400 HTTP Status Code - **ProvisionedThroughputExceededException**
+    * (E) 400 HTTP Status Code - **ProvisionedThroughputExceededException**
     * You exceeded your maximum allowed provisioned throughput for a table or for one or more global secondary indexes
+
+### Using Web Identity Providers with DynamoDB
+* You can authenticate users using Web Identity providers
+    * Facebook, Google, Amazon, or any other Open-ID connect compatible identity provider
+    * this is done using ```AssumeRoleWithIdentity``` API
+    * you will need to create a Role first
+* (E) For the exam you need to know the basic steps taken to authenticate
+    1. User authenticates with ID provider (eg. Facebook)
+    2. They are passed a token by their ID provider
+    3. Your code calls ```AssumeRoleWithIdentity``` API and provides the providers token and specifies the ARN for the
+    IAM role
+    4. App can now access DynamoDB from between 15 minutes to 1 hour (default is 1 hour)
