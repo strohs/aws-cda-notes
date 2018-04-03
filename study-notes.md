@@ -853,11 +853,10 @@ each file specifying the command (jpeg-encode) and the location of the file in A
 
 ## SQS Developer Exam Tips
 * SQS can be auto-scaled
-* SQS is engineered to provide "at least once" delivery of all messages in its queues. Although most of the time each
-message will be delivered to your application exactly once, you should design your system so that processing a message
-more than once does not create any errors or inconsistencies
+* SQS Standard Queues are engineered to provide "at least once" delivery of all messages in its queues. Although 
+most of the time each message will be delivered to your application exactly once, you should design your system so 
+that processing a message more than once does not create any errors or inconsistencies
 * messages size is 256KB
-
 * SQS Messages can be delivered multiple times and **in any order**
     * if you need priority of one type of message over another, you would create a separate queue for those priority
     messages
@@ -880,3 +879,115 @@ more than once does not create any errors or inconsistencies
 
 
 
+Simple Notification Service (SNS)
+=================================================================================
+## Overview
+* SNS is a web-service that makes it easy to set up, operate, and send notifications from the cloud.
+* It provides developers with a highly scalable, flexible, and cost-effective capability to publish messages from an
+application and immediately deliver them to subscribers or other applications
+* SNS follows the *publish-subscribe* messaging paradigm, with notifications being delivered to clients using a *push*
+mechanism that eliminates the need to periodically check of *poll* for new information and updates
+* With simple APIs requiring minimal up-front development effort, no maintenance or management overhead and 
+pay-as-you-go pricing, Amazon SNS gives developers an easy mechanism to incorporate a powerful notification system
+with their application
+* Besides pushing cloud notifications directly to mobile devices, Amazon SNS can also deliver notifications by SMS text
+message or email, to SQS queues, or to any HTTP endpoint.
+* To prevent messages from being lost, all messages published to SNS are stored redundantly across multiple AZs
+* Pricing
+    * users pay $0.50 per 1 million SNS requests
+    * $0.06 per 100,000 notification deliveries over HTTP
+    * $0.75 per 100 notification deliveries over SMS
+    * $2.00 per 100,000 notification deliveries over Email
+
+## Topics
+* SNS allows you to group multiple recipients using topics. A topic is an *access point* for allowing recipients to
+dynamically subscribe for identical copies of the same notification
+* One topic can support deliveries to multiple endpoint types
+    * eg. you can group together iOS, Android and SMS recipients. When you publish once to a topic, SNS delivers
+    appropriately formatted copies of your message to each subscriber
+* Topic for Email Subscriptions
+    * (E) users must confirm via email reply that they want to be subscribed to the topic
+    * (E) the subscription request will expire after 3 days
+    * (E) the email subscription request can be sent as JSON (or as a regular text Email)
+
+## SNS Benefits
+* Instantaneous, push-based delivery (no polling)
+* Simple APIs and easy integration with applications
+* Flexible message delivery over multiple transport protocols
+* Inexpensive, pay-as-you-go model, with no up front costs
+* Web based AWS Management Console offers the simplicity of a point-and-click interface
+
+## SNS vs SQS
+(E)
+* Both messaging services in AWS
+* SNS - push
+* SQS - Polls (pulls)
+
+* (E) Should you use SQS or SNS?
+    * Do you need to *push* messages out to users/apps/etc..? Use SNS
+    * Do you need to *pull* or *poll* messages? use SQS
+* (E) SNS message type for email push is JSON
+
+## SNS Summary
+(E)
+* SNS consists of a topic and each topic can have multiple subscriptions
+* SNS subscriptions support multiple delivery protocols
+    * Email
+    * Email as JSON
+    * HTTP
+    * HTTPS
+    * Amazon SQS
+    * Application
+    * AWS Lambda
+    * SMS
+* Messages can be customized for each protocol above
+* Instantaneous **push** based delivery (no polling)
+
+
+Simple Work Flow (SWF)
+==================================================================================
+## Overview
+* SWF is a web service that makes it easy to coordinate work across distributed application components
+* SWF enables applications for a range of use cases, including media processing, web-application back ends,
+business process work flows and analytics pipelines, to be designed as a coordination of tasks
+* Tasks represent invocations of various processing steps in an application which can be performed by executable
+code, web service calls, human actions and scripts
+
+## SWF Workers
+* (E) Workers are programs that interact with Amazon SWF to:
+    * get tasks
+    * process received tasks
+    * return the results
+
+## SWF Decider
+* (E) The decider is a program that controls the coordination of tasks eg. their ordering,concurrency,
+and scheduling according to the application logic
+
+## SWF Workers and Deciders
+* Workers and deciders can run on cloud infrastructure (such as EC2) or an machines behind firewalls. Amazon SWF
+brokers the interactions between workers and the decider. It allows the decider to get consistent views into the
+progress of tasks and to initiate new tasks in an ongoing manner
+* At the same time, Amazon SWF stores tasks, assigns them to workers when they are ready, and monitors their progress.
+**It ensures that a task is assigned only once and is never duplicated.** Since SWF maintains the application's state
+durably, workers and deciders don't have to keep track of execution state. They can run independently and scale quickly
+
+## SWF Domains
+* think of domains like a container
+* Your workflow and activity types and the workflow execution itself are all scoped to a domain. Domains isolate a set
+of types, executions, and task lists from others within the same account
+* You can register a domain by using the AWS management console or by using the ```RegisterDomain``` action in the
+Amazon SWF API
+    * the parameters are specified in JSON format
+
+* How long for workflows?
+    * (E) **maximum workflow can be 1 year and the value is always measured in seconds**
+
+## SWF vs SQS
+(E)
+* SWF is a task oriented API, 
+    * whereas SQS is a message-oriented API
+* SWF ensures that a task is assigned only once and is never duplicated
+    * With SQS you need to handle duplicated messages and may also need to ensure that a message is processed only once
+* SWF keeps track of all the tasks and events in an application
+    * With SQS, you need to implement your own application-level tracking, especially if your application uses 
+    multiple queues.
