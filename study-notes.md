@@ -8,7 +8,7 @@ AWS Certified Developer Associate
   * Edge Locations - endpoints for AWS used for caching content. These are 50+ edge locations, in data-centers,
    spread around the world.
 
-## Identity Access Management (IAM)
+# Identity Access Management (IAM)
 centralized control to your AWS account
 * IAM provides
     * shared access to your AWS account
@@ -86,7 +86,7 @@ actions granted to that role
 
 
 
-## EC2
+# EC2
 ### EC2 Instances
 * On Demand - you pay a fixed rate, by the hour (or second) with no commitment
 * Reserved - provide you with a capacity reservation and offer a significant discount on the hourly charge. 1 year or
@@ -300,7 +300,7 @@ root volume after creation of the volume
     * additional volumes can be encrypted
 
 
-## Simple Storage Service (S3)
+# Simple Storage Service (S3)
 Simple storage service provides secure, durable, highly-scalable object storage. The date is spread across multiple
 devices and facilities
 
@@ -522,7 +522,7 @@ which will in turn transfer to S3.
 * You can upload up to **5GB** in a **single operation**
 
 
-## Databases 101
+# Databases 101
 AWS offers the following Database (DB) services:
 * RDS
     * Relational Database
@@ -564,7 +564,7 @@ The answer could be to setup ElastiCache to cache those queries
 
 
 
-## Dynamo DB
+# Dynamo DB
 A fast and flexible NoSQL database service for all applications that need consistent, single-digit millisecond latency
  at any scale. It is a fully managed DB and supports both document and key-value data models. Its flexible data
  model and reliable performance make it a great fit for mobile, gaming, web etc...
@@ -582,11 +582,14 @@ A fast and flexible NoSQL database service for all applications that need consis
 * you can export a DynamoDB table (or selected items) to a .CSV file
 * can update your DynamoDB table capacity on the fly
     * "push button capacity scaling"
+* DynamoDB supports nested attributes up to 32 levels deep.
 
 
 ### DynamoDB Data Model
 * Tables
+    * a collection of Items
 * Items
+    * a collection of Attributes
     * like a row of data in a RDB
     * aggregate size of an item, including all the attribute names and attribute values, **cannot exceed 400KB**
 * Attributes
@@ -602,13 +605,13 @@ A fast and flexible NoSQL database service for all applications that need consis
             * DynamoDB uses the partition keys value as input to a hash function. The output of the hash function
             determines the partition on which data is to be stored
             * **no two items in a table can have the same partition key value!**
-    * Composite key
-        * a unique key plus a *range* key
-        * **Partition Key + Sort Key** (composed of two attributes)
-            * a hash and a range 
-            * uses the partition key to determine the partition location, but two items can have the same partition
-            key; however, **they must have a different sort key**
-            * **all items with same partition key are stored together, in sorted order, by sort key value**
+    * Composite Primary key
+        * composed of two attributes:
+            * **Partition Key + Sort Key**
+                * a hash and a range 
+                * uses the partition key to determine the partition location, but two items can have the same partition
+                key; however, **they must have a different sort key**
+                * **all items with same partition key are stored together, in sorted order, by sort key value**
 
 ### DynamoDB Indexes
 Many applications might benefit from having one or more **secondary** (or alternate) keys available to allow efficient 
@@ -618,11 +621,12 @@ indexes on a table. Dynamo Supports two types:
     * has the **same** partition key as the table but different sort key
     * can **only** be created when creating a table
     * cannot be removed or modified after table creation
+    * can create a maximum of 5 local secondary indexes per table
     * A local secondary index is "local" in the sense that every partition of a local secondary index is scoped to a 
     table partition that has the same partition key
     * LSIs limit the total size of all elements (tables and indexes) to 10 GB per partition key value
 * Global Secondary Index (GSI)
-    * an index with a partition or a partition-and-sort key that can be **different** from those on the table
+    * an index with a partition or a partition-and-sort key that can be **different** from those already on the table
     * can be created at table creation time or added later
     * can create a maximum of 5 global secondary indexes per table
     * GSIs do not enforce data co-location, or a maximum partition size (unlike LSIs)
@@ -663,3 +667,75 @@ removes many results, if possible. Also, as a table grows, the scan slows. The s
 the requested values and can use up the provisioned throughput for a large table in a single operation
 * For quicker response times, design your tables in a way that can use the *Query*,*Get*, or *BatchGetItem* APIs.
 Alternatively, design you application to use scan operations in a way that minimized impact on your tables request rate
+
+
+### DynamoDB Provisioned Throughput Calculations
+* Unit of Read provisioned throughput
+    * all reads are rounded up to increments of 4KB
+    * Eventually Consistent Reads (default) consist of **2 reads per second**
+    * Strongly Consistent Reads consist of **1 read per second**
+* Unit of Write provisioned throughput
+    * All writes are 1KB in size
+    * All writes consist of 1 write per second
+
+### The Magic Formula
+#### Read units
+* **(Size of Read rounded to nearest 4KB chunk / 4KB) * num of items = read throughput**
+    * **Divide by 2 if eventually consistent**
+
+* Example 1 - You have an application that requires to read 10 items (a row in DynamoDB) of 1KB per second using 
+eventual consistency. What should you set the read throughput to?
+* Solution 1:
+    * First calculate how many read units *per item* we need
+        * 1KB rounded to the nearest 4KB increment = 4
+        * 4KB / 4KB = *1 read unit per item*
+    * 1 * 10 read items = 10
+    * using eventual consistency we get 10/2 = 5
+    * *5 units of read throughput*
+
+* Example 2 - You have an application that requires to read 10 items of 6KB per second using eventual consistency.
+What should you set the read throughput to?
+* Solution 2:
+    * First calculate how many read units per item we need
+        * 6KB rounded up to nearest increment of 4KB is 8KB
+        * 8KB / 4KB = 2 read units per item
+    * 2 * 10 read items = 20
+    * using eventual consistency we get 20 / 2 = 10
+    * *10 units of read throughput* 
+    
+* Example 3 - You have an application that requires to read 5 items of 10KB per second using eventual consistency.
+What should you set the read throughput to?
+* Solution 3:
+    * First calculate how many read units per item we need
+        * 10KB rounded up to nearest increment of 4KB is 12KB
+        * 12KB / 4KB = 3 read units per item
+    * 3 * 5 read items = 15
+    * using eventual consistency we get 15 / 2 = 7.5
+    * *8 units of read throughput*
+
+* Example 4 - You have an application that requires to read 5 items of 10KB per second using strong consistency. What
+should you set the read throughput to?
+* Solution 4:
+    * First calculate how many read units per item we need
+        * 10KB rounded up to nearest 4KB increment is 12KB
+        * 12KB / 4KB = 3 read units per item
+    * 3 * 5 read items = 15
+    * using **strong consistency** we get *15 units of read throughput*
+
+#### Write Units
+* Example 1 - You have an application that requires to write 5 items, with each item being 10KB in size per second.
+What should you set the write throughput to?
+    * **Each write unit consists of 1KB of data.** You need to write 5 items per second with each item using 10KB of data.
+    * 5 * 10KB = 50 write units
+    * *write throughput of 50 units*
+* Example 2 - You have an application that requires to write 12 items of 100KB per item each second. What should you 
+set the write throughput to?
+    * Each write unit consists of 1KB of data.
+    * You need to write 12 items per second with each item using 100KB of data
+    * 12 * 100KB = 1200 write units
+    * write throughput of 1200 units
+
+
+* What happens if you exceed your write or read throughput?
+    * 400 HTTP Status Code - **ProvisionedThroughputExceededException**
+    * You exceeded your maximum allowed provisioned throughput for a table or for one or more global secondary indexes
