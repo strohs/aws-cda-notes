@@ -802,12 +802,29 @@ the consumer can process it, or if the producer or consumer are only intermitten
 * SQS ensures delivery of each message at least once, and supports multiple readers and writers interacting with
 the same queue
 * A single queue can be used simultaneously by many distributed application components, with no need for those
-components to coordinate with each other to share the queue   
-* SQS is engineered to always be available and deliver messages. One of the resulting tradeoffs is that SQS does
-not guarantee FIFO delivery of messages. For many distributed applications, each message can stand on its own, and
-as long as all messages are delivered, the order is not importan
+components to coordinate with each other to share the queue
+
+## Queue Types
+### Standard Queues
+* unlimited throughput
+    * nearly unlimited number of transactions per second per API action
+* At-least-once delivery 
+    * a message is delivered at least once, but occasionally more than once copy of a message is delivered
+* Best-Effort-Ordering
+    * occasionally messages might be delivered in an order different from which they were sent
 * If your system requires that order be preserved, you can place sequencing information in each message, so that
-you can reorder the messages when the queue returns them
+you can reorder the messages when the queue returns them. Or see if you can use a FIFO queue
+
+### FIFO Queues
+Used when the **order** of operations and events is critical. FIFO queues not available in all regions
+* High Throughput
+    * support 300 messages per second (300 send,receive,or delete operations per second)
+    * when you batch 10 messages per operation, FIFO queues can support up to 3,000 messages per second
+* Exactly Once Processing
+    * a message is delivered once and remains available until a consumer processes and deletes it. Duplicates are
+    not introduced into the queue
+* First-in-First-out delivery
+    * the order in which messages are sent and received is strictly preserved
 
 
 
