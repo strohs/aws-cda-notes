@@ -991,3 +991,70 @@ Amazon SWF API
 * SWF keeps track of all the tasks and events in an application
     * With SQS, you need to implement your own application-level tracking, especially if your application uses 
     multiple queues.
+
+
+
+Elastic Beanstalk
+=======================================================================================
+## Overview
+* With Elastic Beanstalk you can deploy, monitor and scale an application quickly
+* It provides developers or end users with the ability to provision application infrastructure in an almost
+transparent way
+* Elastic Beanstalk enables developers to just "upload their code" and have Elastic Beanstalk provision the underlying
+resources underneath
+* It has a highly abstract focus towards infrastructure, focusing on components and performance, not configuration and
+specifications
+* It attempts to remove or significantly simplify infrastructure management, allowing applications to be deployed into
+infrastructure environments easily
+* AWS invented this so developers that didn't have much AWS experience would start deploying their applications to AWS
+
+## Beanstalk key architecture components
+* Applications are the high level structure in beanstalk
+* Either you entire application is one EB application OR
+    * each logical component of your application can be a EB application or a EB environment within an application
+
+* Applications can have multiple environments (Prod, Staging, Dev, V1,V2,etc) or functional type (front-end, back-end)
+* Environments are either single instances or scalable
+* Environments are either web server environments or worker environments
+
+* application versions are unique packages which represent versions of your apps.
+* each application can have many versions (1:M relationship)
+* application versions can be deployed to environments within an application
+
+## Available Platforms on Elastic Beanstalk
+(E)
+* Preconfigured
+    * PHP
+    * Java
+    * Tomcat
+    * Node.js
+    * Ruby
+    * .NET
+    * Python
+    * Go
+    * Packer
+* Preconfigured - Docker
+    * Glassfish
+    * Go
+    * Python
+* Generic
+    * Docker
+    * Docker multi-container
+    
+## Using Elastic Beanstalk with a Database
+* Two options
+    * have EB create and provision a RDS DB for you
+        * you can then configure it to delete the DB upon application termination, 
+        * or configure it to take a snapshot of your DB and store it on S3 upon application termination 
+    * use an existing RDS database
+        * you create this yourself and then configure EB to use it
+
+## Exam tips
+* You can have multiple versions of your applications
+* Your applications can be split into tiers (Web Tier, Application Tier, Database Tier)
+* You can update your application
+* You can do application updates as well as configuration updates
+    * Deployment policies
+        * All at once, Rolling, Rolling with additional batch, and Immutable
+* You pay for the AWS resources EB configures for you (EB itself is free) 
+
