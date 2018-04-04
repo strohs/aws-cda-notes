@@ -30,7 +30,8 @@ centralized control to your AWS account
 * **new users have no permissions when first created**
 
 
-## Security Token Service (STS)
+Security Token Service (STS)
+==================================================================
 * grants users limited (and temporary) access to AWS resources
 * users can come from 3 sources:
     * Federation (typically Active Directory, LDAP)
@@ -43,7 +44,7 @@ centralized control to your AWS account
     * Cross account access
         * lets users from one AWS account access resources in another
 
-### Definitions
+## Definitions
 * Federation - combining or joining a list of users in one domain (such as IAM) with a list of users in another 
 domain (such as Facebook, Active Directory, LDAP)
 * Identity Broker - a service that allows you to take an identity from point A and join it (federate) to point B
@@ -51,6 +52,25 @@ domain (such as Facebook, Active Directory, LDAP)
 * Identity Store - services like Facebook,Active Directory,Google,etc...
 * Identities - a user of a service (like Facebook)
 
+## Identity Federation Options
+### Federating Users of a Mobile or Web-based App with Amazon Cognito
+### Federating Users with Public Identity Service Providers or OpenID Connect
+### Federating users with SAML 2.0
+* This feature enables federated single sign-on (SSO), so users can log into the AWS Management Console or call the
+ AWS APIs without you having to create an IAM user for everyone in your organization. By using SAML, you can simplify 
+ the process of configuring federation with AWS, because you can use the IdP's service instead of writing custom 
+ identity proxy code. 
+1. (E) You can authenticate with Active Directory using **SAML2.0**
+2. (E) Authenticate with Active Directory first and then get a temporary security credential
+
+### Federating users by creating a custom identity broker application
+* If your identity store is not compatible with SAML 2.0, then you can build a custom identity broker application 
+to perform a similar function. The broker application authenticates users, requests temporary credentials for 
+users from AWS, and then provides them to the user to access AWS resources.
+* To get temporary security credentials, the identity broker application calls either ```AssumeRole``` or 
+```GetFederationToken``` to obtain temporary security credentials, depending on how the developer wants to manage the 
+policies for users and when the temporary credentials should expire
+ 
 #### Scenario 1 (gets user credentials from LDAP, and sends those to AWS STS)
 1. Develop an Identity Broker to communicate with LDAP and AWS STS (you develop this in house)
 2. Identity Broker always authenticates with **LDAP first, then with AWS STS**
@@ -62,13 +82,8 @@ domain (such as Facebook, Active Directory, LDAP)
 3. application then authenticates with STS and assumes that IAM Role
 4. application uses that IAM Role to interact with S3 (or some other AWS resource)
 
-### Active Directory Federation (with SAML2.0)
-This feature enables federated single sign-on (SSO), so users can log into the AWS Management Console or call the
- AWS APIs without you having to create an IAM user for everyone in your organization. By using SAML, you can simplify 
- the process of configuring federation with AWS, because you can use the IdP's service instead of writing custom 
- identity proxy code. 
-1. (E) You can authenticate with Active Directory using **SAML2.0**
-2. (E) Authenticate with Active Directory first and then get a temporary security credential
+
+
 
 ### Web Identity Federation with Mobile Applications
 * need to know that you can authenticate your applications using providers such as Facebook,Google,Amazon.com,etc...
@@ -104,7 +119,8 @@ to use your existing server bound software licenses.
 
 Family | Specialty | Use Case
 :-----:|:---------:|:--------:
-D2 | Dense Storage | File servers,Hadoop,Date warehousing
+D2 | HDD Dense Storage | File servers,Hadoop,Date warehousing,Massively Parallel Processing (MPP) 
+H1 | HDD Storage | MapReduce-based workloads, distributed file systems such as HDFS
 R4 | Memory Optimized | memory intensive apps, DBs (R = RAM)
 M4 | General purpose | Application Servers
 C4 | Compute Optimized | CPU intensive apps (C=CPU)
