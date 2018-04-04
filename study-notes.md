@@ -1058,3 +1058,73 @@ infrastructure environments easily
         * All at once, Rolling, Rolling with additional batch, and Immutable
 * You pay for the AWS resources EB configures for you (EB itself is free) 
 
+
+CloudFormation
+=====================================================================================================
+* CloudFormation allows you to take what was once traditional hardware infrastructure and convert it into **code**
+* CloudFormation gives developers and system administrators an easy way to create and manage a collection of related
+AWS resources, provisioning and updating them in an orderly and predictable fashion
+* You don't need to figure out the order for provisioning AWS services or the subtleties of making those dependencies
+work. CloudFormation takes care of it for you
+* After your AWS resources are deployed, you can modify and update them in a controlled and predictable way, in
+effect applying version control to your AWS infrastructure the same way you do with your software
+
+## CloudFormation Stack vs. Template
+* A CloudFormation Template is essentially an architectural diagram
+* A CloudFormation Stack is the end result of that diagram (i.e. what is actually provisioned)
+* You create,update, and delete a collection of resources by creating,updating and deleting stacks using CloudFormation
+Templates
+* CloudFormation templates are in JSON format or YAML
+
+## Elements of a Template
+* Mandatory Elements
+    * List of AWS resources and their associated configuration values
+* Optional Elements
+    * The template's file format and version number
+    * Template parameters
+        * the input values that are supplied at stack creation time. Limit of 60
+    * Output Values
+        * The output values required once a stack has finished building (such as the public IP address, ELB address
+        ,etc.) Limit of 60
+    * List of data tables
+        * used to look up static configuration values such as AMI's etc...
+
+## A Simple Template
+```json
+{
+  "Resources" : { 
+    "HelloBucket" : {
+        "Type":"AWS::S3::Bucket"
+    } 
+  }
+}
+```
+
+## Outputting Data
+* (E) You can use ```Fn:GetAtt``` to output data.
+    * prints the values of the resources that have been configured by CloudFormation
+
+```json
+{ "PublicIP" : {
+    "Description":"Public IP address of the web server", 
+    "Value" : { 
+        "Fn:GetAtt" : [
+            "WebServerHost", "PublicIp"
+        ]
+    }
+ }
+}
+```
+
+## Exam Tips
+* CloudFormation *automatic rollback on error* is enabled by default
+    * if stack fails to start-up, it will automatically roll-back and delete any resources it created
+* You are charged for errors (e.g. any EC2 instances you accidentally spin up...)
+* CloudFormation itself is free (the resources it creates are not)
+* Stacks can wait for applications to be provisioned using the ```WaitCondition```
+    * e.g. you need to wait for some resource to be created first, before moving on
+* You can use ```Fn:GetAtt``` to output data
+* Route53 is completely supported. This includes creating **new** hosted zones or **updating** existing ones
+* You can create A Records, Aliases etc...
+* IAM Role Creation and Assignment is also supported
+* May get scenario question on exam comparing ElasticBeanstalk to CloudFormation
