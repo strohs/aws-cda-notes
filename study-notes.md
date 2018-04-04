@@ -1197,4 +1197,122 @@ e.g. S3, DynamoDB, Lambda
     * Abstracted Services
         * S3, DynamoDB, Lambda
         * customer responsible for client side data encryption and data integrity authentication
-            * AWS responsible for everything else    
+            * AWS responsible for everything else
+
+
+Route 53 and DNS
+===========================================================================
+## DNS 101
+* IPV4 - 32bits
+* IPV6 - 128bits
+* AWS VPCs are IPv6 compatible
+
+### Top Level Domains
+* the last word in a domain name represents the *top level domain*
+    * .com .edu .gov  etc...
+* the second word in a domain name is known as a second level domain name (this is optional though)
+    * .co.uk .gov.uk .com.au
+ 
+### Domain Registrars
+* A registrar is an authority that can assign domain names directly under one or more top-level domains.
+    * GoDaddy.com    etc....
+* These domains are registered with *InterNIC*, a service of ICANN, which enforces uniqueness of domain names
+across the internet
+* Each domain name becomes registered in a central database known as the *WhoIS* database
+
+### Start of Authority (SOA) Records
+* The SOA record stores information about
+    * the name of the server that supplied data for the zone
+    * the administrator of the zone
+        * e.g. who onws the zone, will contain contact information
+    * the number of seconds a secondary name server should wait before checking for updates
+    * the number of seconds a secondary name server should wait before retrying a failed zone transfer
+    * the maximum number of seconds that a secondary name server can use data before it must be either refreshed or
+    expire
+    * **the default number of seconds for the time-to-live file on resource records**
+
+### Name Server (NS) Records
+* NS stands for Name Server records and are used by Top Level Domain servers to direct traffic to the content DNS
+server which contains the authoritative DNS records
+
+### A Records
+* An "A" record is the fundamental type of DNS record and the "A" in A record stand for *"Address"*. The A record is
+used by a computer to translate the name of the domain to an IP address.
+    * e.g. http://www.acloud.guru might point to http://123.10.10.80
+
+### TTL Record
+* The length that a DNS record is cached on either the Resolving server or the users own local PC is equal the value
+of the "Time to Live" (TTL) in seconds. The lower the time to live, the faster changes to DNS records take to
+propagate throughout the internet.
+
+### CNames
+* A Canonical Name (CName) can be used to resolve one domain name to another. For example, you may have a mobile
+website with the domain name http://m.acloud.guru that is used for when users browse to your domain name on their
+mobile devices. You may also want the name http://mobile.acloud.guru to resolve to this same address
+    
+### Alias Records
+* only used by Amazon Route53
+* Alias records are used to map resource record sets in your hosted zone to Elastic Load Balancers, CloudFront
+distributions or S3 buckets that are configured as websites
+* Alias records work like a CName record in that you can map one DNS name (www.example.com) to another 'target' DNS
+name (elb1234.elb.amazonaws.com)
+* key difference - a CName can't be used for naked domain names ( the domain name without www, also called the zone 
+apex record) You can't have a CName for http://acloud.guru it must be either an A record or an Alias
+* alias resource record sets can save you time because Amazon Route 53 automatically recognizes changes in the record
+sets that the alias resource record set refers to
+    * for example, suppose an alias resource record set for example.com points to an ELB load balancer at
+    lb1-1234.us-east-1.elb.amazonaws.com. If the IP-address of the load balancer changes, Amazon Route 53 will
+    automatically reflect those changes in DNS answers for example.com without any changes to the hosted zone that
+    contains resource record sets for example.com
+
+### Route53 routing policies
+(E)
+* Simple
+    * This is the default routing policy when you create a new record set. This is most commonly used when you have
+    a single resource that performs a given function for your domain, for example, **one web server** that serves content
+    for the http://acloud.guru website
+* Weighted
+    * lets you assign percentages (aka weights) to routes. eg. 80% of traffic goes to one resource and 20% of traffic
+    goes to another
+* Latency
+    * latency based routing allows you to route your traffic based on the lowest network latency for your end user (eg 
+    which region will give them the lowest response time)
+    * to use latency-based routing you create a latency resource record set for the Amazon EC2 (or ELB) resource in 
+    each region that hosts your website. When Amazon route53 receives a query for your site, it selects the latency
+    resource record set for the region that gives the user the lowest latency. Route 53 then responds with the value
+    associated with that resource record set
+* Failover
+    * failover routing policies are used when you want to create an active/passive set-up. e.g. you may want your
+    primary site to be in EU-WEST-2 and your secondary disaster recovery site in AP-SOUTHEAST-2
+    * Route53 will monitor the health of your primary site using a health check
+        * a health check monitors the health of your end points
+* Geolocation
+    * geolocation routing lets you choose where your traffic will be sent based on the geographic location of your
+    users (ie the location from which DNS queries originate.) 
+        * e.g. you might want all queries from Europe to be routed to a fleet of EC2 instances that are 
+        specifically configured for your European customers. These servers may have the local language of 
+        your European customers and all prices are displayed in Euros.
+* GeoProximity (new)
+    * GeoProximity routing lets Amazon Route 53 route traffic to your resources based on the geographic location of 
+    your users and your resources. You can also optionally choose to route more traffic or less to a given resource
+     by specifying a value, known as a bias, that expands or shrinks the size of the geographic region from which 
+     traffic is routed to a resource
+* Multivalue answer (new)
+    * Multivalue answer routing lets you configure Amazon Route 53 to return multiple values, such as IP addresses 
+    for your web servers, in response to DNS queries. You can specify multiple values for almost any record, but 
+    multivalue answer routing also lets you check the health of each resource, so Route 53 returns only values for 
+    healthy resources. It's not a substitute for a load balancer, but the ability to return multiple health-checkable 
+    IP addresses is a way to use DNS to improve availability and load balancing.
+
+
+## Exam Tips
+* Elastic Load Balancers never have a predefined IPv4 address. They only have a DNS name
+* Understand the difference between an Alias record and a CNAME
+    * CNames can't be used for naked domain names, Alias records can resolve naked domain names to ELB's address
+    * When you make a request to Route53 for a DNS record, you will be charged for that request using CNames, whereas
+    if you make a request using an Alias Record, you won't be charged
+* Given a choice, always choose an Alias record over a CNAME
+* remember the different routing policies and their use cases
+    * Simple, Weighted, Latency, Failover, Geolocation, GeoProximity, Multivalue
+
+ 
