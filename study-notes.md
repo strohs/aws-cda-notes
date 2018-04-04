@@ -62,10 +62,12 @@ domain (such as Facebook, Active Directory, LDAP)
 3. application then authenticates with STS and assumes that IAM Role
 4. application uses that IAM Role to interact with S3 (or some other AWS resource)
 
-### Active Directory Federation (with SAML)
-This is a Single Sign On scenario. A user can log into the AWS console from a link on their corporate intranet which
-then transparently logs them into the AWS console. Uses SAML behind the scenes to do this
-1. (E) You can authenticate with Active Directory using **SAML**
+### Active Directory Federation (with SAML2.0)
+This feature enables federated single sign-on (SSO), so users can log into the AWS Management Console or call the
+ AWS APIs without you having to create an IAM user for everyone in your organization. By using SAML, you can simplify 
+ the process of configuring federation with AWS, because you can use the IdP's service instead of writing custom 
+ identity proxy code. 
+1. (E) You can authenticate with Active Directory using **SAML2.0**
 2. (E) Authenticate with Active Directory first and then get a temporary security credential
 
 ### Web Identity Federation with Mobile Applications
