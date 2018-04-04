@@ -322,37 +322,48 @@ root volume after creation of the volume
 
 Simple Storage Service (S3)
 =============================================================
-Simple storage service provides secure, durable, highly-scalable object storage. The date is spread across multiple
+Simple storage service provides secure, durable, highly-scalable object storage. The data is spread across multiple
 devices and facilities
 
-### S3 Basics
-* S3 is object based (allows you to upload files)
-* Files can be from 0 Bytes to 5TB
-* files are stored in buckets
-* S3 is a universal namespace, names must be unique globally
-* S3 will automatically creates a DNS for your bucket
+## S3 Basics
+* (E) S3 is object based (allows you to upload files)
+* (E) Files can be from **0 Bytes to 5TB**
+* (E) there is unlimited storage, AWS will add more storage as needed
+* (E) files are stored in buckets
+* (E) S3 is a universal namespace, names must be unique globally
+* (E) S3 will automatically creates a DNS for your bucket
     * https://s3[-us-east-1].amazonaws.com/yourbucketname
         * part in square brackets my no longer by needed
     * buckets are a universal namespace, cannot have duplicate bucket name across regions
-* when you successfully upload an object, you'll receive a HTTP 200 code
-* Built for 99.99% availability
-* Built for 99.999999999% durability (the eleven nines guarantee)
+* (E) when you successfully upload an object, you'll receive a HTTP 200 code
+* (E) Built for 99.99% availability
+* (E) Built for 99.999999999% durability (the eleven nines guarantee)
 * Tiered storage is available
 * Lifecycle management
 * Versioning
 * Encryption
-* you control access to your buckets using Access Control Lists (ACL) or Bucket Policies
-* by default, buckets and all objects stored in them are private
+* you control access to your buckets using:
+    * Access Control Lists (ACL)
+        * can be applied at the object level
+        * A document that defines who can access a particular bucket or object. Each bucket and object in Amazon 
+        S3 has an ACL. The document defines what each type of user can do, such as write and read permissions.
+    * Bucket Policies
+        * bucket policies can only be applied at the bucket level
+        * A bucket policy is a resource-based AWS Identity and Access Management (IAM) policy that grants other AWS 
+        accounts or IAM users access to an S3 bucket. Bucket policies supplement, and in many cases, replace 
+        ACL-based access policies
+* (E) by default, buckets and all objects stored in them are private
 
-### Data Consistency Model
-* **read after write consistency** for PUTS of new objects
+## Data Consistency Model
+* (E) **read after write consistency** for PUTS of *new objects*
     * you'll be able to read the object immediately
-* Eventual consistency for **overwrite PUTS and DELETES (can take time to propagate)**
-* updates are **atomic** you'll either get the new data or else the old data
+* (E) Eventual consistency for **overwrite PUTS and DELETES (can take time to propagate)**
+* (E) updates are **atomic** you'll either get the new data or else the old data
 
-### S3 is a simple key/value store
+## S3 is a simple key/value store
+(E) 
 * Key - the name of the object
-    * stored lexigraphically
+    * stored lexicographically
     * to improve performance you may want to add random letters to beginning of file name in order to spread your files
     across S3 storage
 * Value - the object data (a sequence of bytes)
@@ -362,11 +373,12 @@ devices and facilities
     * access control list
     * ability to Torrent the file
 
-### S3 Storage Tiers/Classes
+## S3 Storage Tiers/Classes
+(E) 
 * **S3** (aka S3 Standard)
     * 99.99% availability and 99.999999999% durability
     * designed to withstand loss of 2 facilities concurrently
-    * minimum object size 0KB
+    * **minimum object size 0KB**
 * **S3-IA** (infrequently accessed)
     * for data accessed less frequently but requiring rapid access when needed
     * Lower fee than S3 but charged a retrieval fee
@@ -379,7 +391,7 @@ devices and facilities
     * very cheap but used for archival only
     * Takes 3-5 hours to restore
 
-### S3 Encryption
+## S3 Encryption
 * two main types of encryption
     * Client Side encryption
         * data is encrypted by owner before storing on S3
@@ -388,7 +400,7 @@ devices and facilities
         * using KMS (SSE-KMS)
         * using customer provided keys
 
-### Static Website Hosting
+## Static Website Hosting (E) 
 * S3 can be used to host files for a **static** website
     * no PHP,asp,servlets, etc, allowed
 * S3 will create a publicly available DNS for your site
@@ -398,18 +410,18 @@ devices and facilities
     * a static site that needs to be scalable and handle lots of requests
         * like a site for a major blockbuster movie release
 
-#### Cross Origin Resource Sharing (CORS)
+### Cross Origin Resource Sharing (CORS) (E) 
 * way of allowing resource/code in one S3 bucket to access a resource in another S3 bucket
 * have to enable CORS in the **bucket that is being called** (the bucket containing the resource) and then configure
 the URL for the origin that will be calling the bucket
 
-### S3 Versioning
-* **Once versioning is enabled for a bucket, it cannot be disabled**
+## S3 Versioning
+* (E) **Once versioning is enabled for a bucket, it cannot be disabled**
 * stores all versions of an object (including writes)
 * integrates with lifecycle rules
 * Multi-Factor Authentication delete capability is available for extra layer of security
 
-### Cross Region Replication
+## Cross Region Replication (E) 
 * deleting object in source bucket **does not delete** it in replicated bucket
 * **versioning must be enabled on both source and destination buckets**
 * Regions must be unique
@@ -418,7 +430,7 @@ the URL for the origin that will be calling the bucket
 * you cannot replicate to multiple buckets or use daisy chaining (at this time)
 * understand what cross region replication is at a high level
 
-### Lifecycle management S3-IA and Glacier
+## Lifecycle management S3-IA and Glacier (E) 
 * can be used in conjunction with versioning
 * can be applied to current versions and previous versions
 * the following actions can now be done with lifecycle management:
@@ -430,32 +442,32 @@ the URL for the origin that will be calling the bucket
     3. permanently delete objects
 
 
-### Cloudfront Overview
+## CloudFront Overview
 AWS CloudFront is a Content Delivery Network (CDN):
 * a system of distributed servers that deliver webpages and other web content to a user based on the geographic
 locations of the user, the origin of the webpage and a content delivery server
 
-* *Edge Location*
+* (E) *Edge Location*
     * the location where content will be cached. This is separate to an AWS Region/AZ
     * edge locations are not just **Read Only**, you can write to them too
     * objects are cached for the life of the Time-To-Live (TTL)
     * you can force a clear of the cached objects, but you will be charged
-* *Origin*
+* (E) *Origin*
     * this is the origin of all files that the CDN will distribute. Cloudfront is optimized to work with:
         * S3 bucket
         * EC2 instance
         * Elastic Load Balancer
         * Route53
     * **origin can also be a non-AWS server** (e.g. a web-server you own on-premise)
-* *Distribution*
+* (E) *Distribution*
     * the name given to the CDN which consists of a collection of edge locations
         * you can have multiple origins
 
-#### CloudFront Key Terminology
+#### CloudFront Key Terminology (E) 
 * **Web Distribution** - typically used for websites
 * **RTMP** - used for media streaming
 
-#### Creating a CDN (done in a lab)
+#### Creating a CDN (lab)  (E) 
 * know that you can configure the Default TTL (it defaults to 24 hours), you can change it if you have content that
 needs to expire quickly
 * you can restrict use access to content using **Signed URLs** or **Signed Cookies**
@@ -465,7 +477,7 @@ needs to expire quickly
     * removes objects from the CloudFront edge caches.
     * scenario: you need to immediately remove something from the cache and can't wait for the TTL to expire it
 
-### S3 Security and Encryption
+### S3 Security and Encryption (E) 
 * all newly created buckets are private
 * You can setup access control to your buckets using:
     * Bucket Policies
@@ -485,6 +497,7 @@ Types of Encryption in S3
             * Amazon handles the keys for you
         * **AWS Key Management Service (SSE-KMS)**
             * similar to SSE-S3 but more costly
+            * offers more security (key envelopes)
             * managed by Amazon and also provides an audit trail (who used keys to access what)
         * **Customer Provided Keys (SSE-C)**
             * you manage encryption keys
@@ -492,9 +505,14 @@ Types of Encryption in S3
     * you encrypt data on your client then upload it to S3
 
 ### Storage Gateway
-A service that connects an on premises software appliance with AWS cloud-based storage. This service allows you to
+* A service that connects an on premises software appliance with AWS cloud-based storage. This service allows you to
 securely store data to the AWS cloud for scalable and cost effective storage. There are 4 types of Storage Gateway
 offered.
+    * File Gateway
+    * Volume Gateway Stored Volumes
+    * Volume Gateway Cached Volumes
+    * Gateway Virtual Tape Library
+
 
 #### For Exam
 * **File Gateway**
@@ -511,14 +529,16 @@ offered.
 * Exam may present you with scenario questions and ask you to choose the best option from among the 4 gateway types
 
 
-### Snowball
-A physical data transfer device, for transporting data to Amazon, so they can store it AWS. It looks like a cube style
-PC case with handles on the top. Snowball can import data to/from S3
+## Snowball
+* A physical data transfer device, for transporting data to Amazon, so they can store it AWS. It looks like a cube style
+PC case with handles on the top. 
+* Snowball can import data to/from S3
 
 * Replacement for Amazon's *import/export* service
     * customers would send in (mail) all manner of hard-drives and tapes for amazon to backup for them
     * all the different types of hardware was a nightmare for Amazon to manage
-* 3 Types of Snowballs offered:
+
+* (E) 3 Types of Snowballs offered:
     * Snowball
         * just onboard storage
     * Snowball Edge
@@ -529,17 +549,17 @@ PC case with handles on the top. Snowball can import data to/from S3
         * peta byte or exo-byte levels of data
         * this is driven to your site on a 18-wheeler truck
 
-### S3 Transfer Acceleration
+## S3 Transfer Acceleration
 * Utilizes CloudFront edge network to accelerate your uploads to S3. 
 * Instead of uploading directly to an S3 bucket, you can use a distinct URL to upload to an edge location, 
 which will in turn transfer to S3. 
 * Remember **You get a distinct URL for uploading to your bucket**
 
-### S3 Section Notes
+## S3 Section Notes
 * S3   website URL: http://mybucketname.**s3-website**.us-east-1.amazonaws.com
 * direct S3 bucket: http://s3.[us-east-1].amazonaws.com/mybucketname
 * You can upload big files to S3 using multi-part upload
-    * 5MB to 5TB in size
+    * from 5MB to 5TB in size
 * You can upload up to **5GB** in a **single operation**
 
 
