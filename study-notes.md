@@ -302,7 +302,7 @@ root volume after creation of the volume
     * additional volumes can be encrypted
 
 
-imple Storage Service (S3)
+Simple Storage Service (S3)
 =============================================================
 Simple storage service provides secure, durable, highly-scalable object storage. The date is spread across multiple
 devices and facilities
