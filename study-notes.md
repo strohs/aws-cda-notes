@@ -1128,3 +1128,73 @@ Templates
 * You can create A Records, Aliases etc...
 * IAM Role Creation and Assignment is also supported
 * May get scenario question on exam comparing ElasticBeanstalk to CloudFormation
+
+
+
+Shared Responsibility Model
+======================================================================
+(E) Know the difference between what AWS is responsible for and what you (the customer) are responsible for
+## Infrastructure Services
+e.g. EC2, EBS, VPC
+* Customers are Responsible for
+    * Customer Data
+    * Platform and application management
+    * Operating System, Network, and fire-wall configuration
+        * client-side data encryption and data integrity authentication
+        * Server-side encryption
+            * File system and/or data
+        * network traffic protection
+            * encryption,integrity,identity
+* AWS Responsible for
+    * AWS Global infrastructure
+        * Regions, AZs, Edge Locations
+    * Foundation Services
+        * Compute, Storage, Databases, Networking
+
+## Container Services
+e.g. AWS RDS and AWS EMR
+* Customer Responsible for
+    * customer data
+        * client side data encryption and data integrity and authentication
+        * network traffic protection
+            * encryption, integrity, identity
+    * customer IAM
+    * **Firewall configuration**
+* AWS Responsible for
+    * **platform and application management**
+    * **operating system and network configuration** (customer doesn't get access to the OS in this case)
+        * AWS Endpoints
+        * AWS Global infrastructure
+            * Regions, AZs, Edge Locations
+        * Foundation Services
+            * Compute, Storage, Databases, Networking
+
+## Abstracted Services
+e.g. S3, DynamoDB, Lambda
+* Customer responsible for:
+    * Customer Data
+        * client side data encryption and data integrity authentication
+* AWS Responsible for
+    * AWS IAM
+    * Server-side encryption provided by the platform
+    * network traffic protection provided by the platform
+    * platform and application management
+    * operating system, network, firewall configuration
+        * AWS Endpoints
+        * AWS Global infrastructure
+            * Regions, AZs, Edge Locations
+        * Foundation Services
+            * Compute, Storage, Databases, Networking
+
+## Exam Tips
+* remember the different service levels:
+    * infrastructure services
+        * EC2, EBS, VPC
+        * AWS only responsible for Global Infrastructure and Foundation Services
+    * Container services
+        * AWS RDS, AWS EMR
+        * AWS is responsible starting at the operating system / network config. / application management level
+    * Abstracted Services
+        * S3, DynamoDB, Lambda
+        * customer responsible for client side data encryption and data integrity authentication
+            * AWS responsible for everything else    
