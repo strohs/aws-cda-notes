@@ -1362,4 +1362,160 @@ sets that the alias resource record set refers to
 * remember the different routing policies and their use cases
     * Simple, Weighted, Latency, Failover, Geolocation, GeoProximity, Multivalue
 
+
+Virtual Private Cloud (VPC)
+===========================================================================================
+* (E) Think of a VPC as a virtual data center in AWS
+* every region in the world has a default VPC, provide for you when you sign-up to AWS
+* Amazon VPC lets you provision a logically isolated section of the AWS Cloud where you can launch resources in a 
+virtual network that you define. You have complete control over your virtual networking environment, including
+selection of your own IP address range, creation of subnets and configuration of route tables and network gateways
+* You can easily customize the network configuration for your Amazon VPC. For example, you can create a public facing
+subnet for your webservers that has access to the internet, and place your backend systems such as databases or
+application servers in a private facing subnet with no internet access. You can leverage multiple layers of security,
+including security groups and network access control lists, to help control access to EC2 instances in each subnet
+* Additionally, you can create a Hardware Virutal Private Network (VPN) connection between your corporate datacenter
+and your VPC and leverage the AWS cloud as an extension of your corporate datacenter
+
+## What can you do with a VPC
+* Launch instances into a subnet of your choosing
+* assign custom IP address ranges in each subnet
+* configure route tables between subnets
+* create internet gateway and attach it to our VPC
+    * (E) can only have one internet gateway per VPC
+* much better security control over your AWS resources
+* instance security groups
+    * (E) security groups can span availability zones, and multiple subnets
+* subnet network access control lists (ACLS)
+
+## Default VPC vs Custom VPC
+* *Default VPC* 
+    * is user friendly, allowing you to immediately deploy instances
+    * all subnets in default VPC have a route out to the internet
+    * each EC2 instance has both a public and private IP address
+
+## VPC Peering    
+* Allows you to connect one VPC with another via a direct network route using private IP addresses
+* instances behave as if they were on the same private network
+* you can peer VPC's with other AWS accounts as well as with other VPCs in the same account
+* Peering is in a star configuration (aka hub and spoke)
+    * ie 1 central VPC peers with 4 others. **NO TRANSITIVE PEERING**
+
+## Custom VPCs and ELBs
+* (E) Your **Application Load Balancer** must be created in at least two subnets and those subnets must be internet
+ facing (won't be able to create a ALB unless you do this)
+
+## VPC Flow Logs
+* VPC flow logs is a feature that enables you to capture information about the IP traffic going to and from network
+interfaces in your VPC. Flow log data is stored using Amazon CloudWatch Logs. After you've created a flow log, you 
+can view and retrieve its data in Amazon CloudWatch Logs
+* Flow logs can be created at 3 levels:
+    * VPC
+    * Subnet
+    * Network Interface Level
+
+## NATs vs Bastions
+* (E) may get questions about how to make a bastion server highly available
+     * may want at least two public subnets with a bastion server in each of them
+     * may want to enable auto-scaling for your bastion server(s) with health checks
+
+## VPC End Points
+A VPC endpoint enables you to privately connect your VPC to supported AWS services and VPC endpoint services powered 
+by PrivateLink without requiring an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection
+* Instances in your VPC do not require public IP addresses to communicate with resources in the service. Traffic 
+between your VPC and the other service does not leave the Amazon network
+* There are two types of VPC Endpoints:
+    * *Interface*
+        * An elastic network interface with a private IP address that serves as an entry point for traffic destined
+         to a supported service
+        * supported services
+            * Amazon EC2 API
+            * AWS Systems Manager
+            * Amazon CloudWatch Logs
+            * Elastic Load Balancing API
+            * Amazon Kinesis Data Streams
+            * AWS KMS
+            * AWS Service Catalog
+            * Endpoint services hosted by other AWS accounts
+            * Supported AWS Marketplace partner services
+    * *Gateway*
+        * A gateway that is a target for a specified route in your route table, used for traffic destined to a 
+        supported AWS service
+        * Supported Services:
+            * Amazon S3
+            * DynamoDB
+
  
+
+## CIDR
+* smallest CIDR range for AWS is /28 = 16 IP addresses
+
+## Exam Tips
+* think of a VPC as a logical datacenter in AWS
+* VPCs consist of: 
+    * Internet Gateways (IGWs) (or Virtual Private Gateways)
+    * Route Tables
+    * Network Access Control Lists 
+    * Subnets
+    * Security Groups
+* 1 subnet = 1 availability zone
+* security groups are **stateful**
+    * opening an inbound port automatically opens the corresponding outbound port
+* network access control lists are **stateless**
+* **NO TRANSITIVE PEERING**
+* you will lose 5 ip addresses every time you provision a subnet, they are reserved by AWS
+    * eg. 10.0.0.0, 10.0.0.1, 10.0.0.2, 10.0.0.3, 10.0.0.255
+* you can't have multiple IGWs attached to one VPC, 1 IGW per VPC
+* security groups only exist within the VPC you create them in (they don't span between VPCs)
+* NAT Instances:
+    * when creating a NAT Instance make sure you disable Source/Destination check on that instance
+    * NAT instances must be in a public subnet
+    * there must be a route out of the private subnet to the NAT instance, in order for this to work
+    * the amount of traffic that NAT instances can support depends on the instance size. 
+        * If you are bottle-necking, increase the instance size
+    * You can create high availability using Autoscaling groups, multiple subnets in different AZs, and a script
+    to automate failover
+    * NAT instances are always behind a security group
+* NAT Gateways:
+    * preferred by the enterprise
+    * scale automatically up to 10Gbps
+    * no need to patch
+    * not associated with security groups
+    * automatically assigned a public IP address
+    * remember to update your route tables and point them to the NAT Gateway(s)
+    * you'll probably want multiple NAT gateways across AZ's for redundancy
+    * no need to disable source/destination checks
+    * more secure than a NAT instance
+    * amazon manage the NAT gateway for you, (you won't even have SSH access)
+* Network ACL
+    * Your VPC automatically comes with a default network ACL and by default it allows all outbound and inbound
+    traffic
+    * each subnet in your VPC must be associated with a network ACL. If you don't explicitly associate a subnet
+    with a NACL, the subnet is automatically associated with the default NACL
+    * when you create a custom NACL, all inbound/outbound traffic is DENIED by default
+    * NACL rules are evaluated in numerical order
+    * You can associate a NACL with multiple subnets; however, **a subnet can be associated with only one network ACL
+    at a time.** When you associate a network ACL with a subnet, the previous association is removed
+        * NACL(s) can span AZs
+    * NACLs have separate inbound and outbound rules, and each rule can either allow or deny traffic
+    * NACLs are stateless; responses to allowed inbound traffic are subject to the rules for outbound traffic (and
+    vice versa)
+    * remember you may need to allow ephemeral ports on outbound rules for some TCP protocols (like SSH...)
+    * Block IP addresses using network ACLs NOT Security Group
+* Application Load Balancers (ALB)
+    * you will need at least 2 **public** subnets in order to deploy an application load balancer 
+* VPC Flow Log
+    * you cannot enable flow logs for VPCs that are peered with your VPC unless the peer VPC is in your account
+    * you cannot tag a flow log
+    * after you've created a flow log, you cannot change its configuration; for example, you can't associate a 
+    different IAM role with the flow log
+    * Not all IP Traffic is monitored:
+        * traffic generated by instances when they contact the AWS DNS server
+            * if you use your own DNS server, then all traffic to that DNS server is logged
+        * traffic generated by a Windows instance for Amazon Windows license activation
+        * traffic to and from 169.254.169.254 for instance meta-data
+        * DHCP traffic
+        * traffic to the reserved IP address for the default VPC router
+* NATs vs Bastions
+    * a NAT is used to provide internet traffic to EC2 instances in private subnets
+    * a bastion is used to securely administer EC2 instances (using ssh or rdp) in private subnets
