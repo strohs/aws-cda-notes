@@ -1381,7 +1381,7 @@ and your VPC and leverage the AWS cloud as an extension of your corporate datace
 * Launch instances into a subnet of your choosing
 * assign custom IP address ranges in each subnet
 * configure route tables between subnets
-* create internet gateway and attach it to our VPC
+* create a internet gateway and attach it to our VPC
     * (E) can only have one internet gateway per VPC
 * much better security control over your AWS resources
 * instance security groups
@@ -1458,7 +1458,7 @@ between your VPC and the other service does not leave the Amazon network
     * Network Access Control Lists 
     * Subnets
     * Security Groups
-* 1 subnet = 1 availability zone
+* 1 subnet = 1 availability zone (subnets cannot span AZs)
 * security groups are **stateful**
     * opening an inbound port automatically opens the corresponding outbound port
 * network access control lists are **stateless**
