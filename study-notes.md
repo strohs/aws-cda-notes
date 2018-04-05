@@ -382,14 +382,22 @@ devices and facilities
 * **S3-IA** (infrequently accessed)
     * for data accessed less frequently but requiring rapid access when needed
     * Lower fee than S3 but charged a retrieval fee
+    * 99% Availability
+    * 99.999999999% durability
     * **minimum object size 128KB**
+* **S3 One Zone-IA** (S3 One Zone-Infrequent Access)
+    * stores data in a single AZ
+        * therefore not resilient to the loss of the AZ
+    * 20% less cost than S3-IA
+    * everything else the same as S3-IA
 * **Reduced Redundancy Storage**
     * designed to provide **99.99% durability** and 99.99% availability of objects over a given year
     * useful for objects you can recreate (like thumbnail images)
     * lower costs than options above
 * Glacier
     * very cheap but used for archival only
-    * Takes 3-5 hours to restore
+    * you're locked into, at minimum, 90 days of storage
+    * objects over 250MB can take 3-5 hours to restore
 
 ## S3 Encryption
 * two main types of encryption
@@ -463,11 +471,11 @@ locations of the user, the origin of the webpage and a content delivery server
     * the name given to the CDN which consists of a collection of edge locations
         * you can have multiple origins
 
-#### CloudFront Key Terminology (E) 
+### CloudFront Key Terminology (E) 
 * **Web Distribution** - typically used for websites
 * **RTMP** - used for media streaming
 
-#### Creating a CDN (lab)  (E) 
+### Creating a CDN (lab)  (E) 
 * know that you can configure the Default TTL (it defaults to 24 hours), you can change it if you have content that
 needs to expire quickly
 * you can restrict use access to content using **Signed URLs** or **Signed Cookies**
@@ -477,7 +485,7 @@ needs to expire quickly
     * removes objects from the CloudFront edge caches.
     * scenario: you need to immediately remove something from the cache and can't wait for the TTL to expire it
 
-### S3 Security and Encryption (E) 
+## S3 Security and Encryption (E) 
 * all newly created buckets are private
 * You can setup access control to your buckets using:
     * Bucket Policies
@@ -485,7 +493,7 @@ needs to expire quickly
     * Access Control Lists
 * S3 buckets can be configured to create access logs which will log all requests made to the S3 bucket
 
-#### Encryption
+### Encryption
 Types of Encryption in S3
 * *In-Transit* encryption
     * when sending data across the wire to the bucket
@@ -504,7 +512,7 @@ Types of Encryption in S3
 * *Client Side Encryption*
     * you encrypt data on your client then upload it to S3
 
-### Storage Gateway
+## Storage Gateway
 * A service that connects an on premises software appliance with AWS cloud-based storage. This service allows you to
 securely store data to the AWS cloud for scalable and cost effective storage. There are 4 types of Storage Gateway
 offered.
@@ -514,9 +522,10 @@ offered.
     * Gateway Virtual Tape Library
 
 
-#### For Exam
+### For Exam
 * **File Gateway**
     * for flat files stored on S3
+    * accessed through a NFS mount point
 * **Volume Gateway**
     * block storage (uses iSCSI)
     * two types of volume gateway offered:
