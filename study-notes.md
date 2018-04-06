@@ -1445,19 +1445,20 @@ between your VPC and the other service does not leave the Amazon network
             * Amazon S3
             * DynamoDB
 
- 
 
-## CIDR
-* smallest CIDR range for AWS is /28 = 16 IP addresses
 
 ## Exam Tips
 * think of a VPC as a logical datacenter in AWS
 * VPCs consist of: 
     * Internet Gateways (IGWs) (or Virtual Private Gateways)
     * Route Tables
-    * Network Access Control Lists 
+        * contain rules that determine where traffic is routed
+    * Network Access Control Lists
+        * an optional layer of security for your VPC that acts as a firewall for controlling traffic in/out of one
+        or more subnets 
     * Subnets
     * Security Groups
+        * a virtual firewall for an **instance** that controls traffic (into/out of) it
 * 1 subnet = 1 availability zone (subnets cannot span AZs)
 * security groups are **stateful**
     * opening an inbound port automatically opens the corresponding outbound port
@@ -1465,7 +1466,7 @@ between your VPC and the other service does not leave the Amazon network
 * **NO TRANSITIVE PEERING**
 * you will lose 5 ip addresses every time you provision a subnet, they are reserved by AWS
     * eg. 10.0.0.0, 10.0.0.1, 10.0.0.2, 10.0.0.3, 10.0.0.255
-* you can't have multiple IGWs attached to one VPC, 1 IGW per VPC
+* you can't have multiple IGWs attached to one VPC, **1 IGW per VPC**
 * security groups only exist within the VPC you create them in (they don't span between VPCs)
 * NAT Instances:
     * when creating a NAT Instance make sure you disable Source/Destination check on that instance
@@ -1478,7 +1479,7 @@ between your VPC and the other service does not leave the Amazon network
     * NAT instances are always behind a security group
 * NAT Gateways:
     * preferred by the enterprise
-    * scale automatically up to 10Gbps
+    * scale automatically up to **10Gbps**
     * no need to patch
     * not associated with security groups
     * automatically assigned a public IP address
