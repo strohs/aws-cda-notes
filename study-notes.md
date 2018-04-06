@@ -1453,6 +1453,9 @@ between your VPC and the other service does not leave the Amazon network
     * Internet Gateways (IGWs) (or Virtual Private Gateways)
     * Route Tables
         * contain rules that determine where traffic is routed
+        * each subnet in your VPC must be associated with a route table; the table controls the routing for the subnet 
+        * A subnet can only be associated with one route table at a time
+            * but you can associate multiple subnets with the same route table
     * Network Access Control Lists
         * an optional layer of security for your VPC that acts as a firewall for controlling traffic in/out of one
         or more subnets 
@@ -1496,7 +1499,7 @@ between your VPC and the other service does not leave the Amazon network
     * when you create a custom NACL, all inbound/outbound traffic is DENIED by default
     * NACL rules are evaluated in numerical order
     * You can associate a NACL with multiple subnets; however, **a subnet can be associated with only one network ACL
-    at a time.** When you associate a network ACL with a subnet, the previous association is removed
+    at a time.** When you associate a network ACL with a subnet, the subnets previous association is removed
         * NACL(s) can span AZs
     * NACLs have separate inbound and outbound rules, and each rule can either allow or deny traffic
     * NACLs are stateless; responses to allowed inbound traffic are subject to the rules for outbound traffic (and
