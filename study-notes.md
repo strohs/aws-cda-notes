@@ -604,7 +604,7 @@ AWS offers the following Database (DB) services:
 * Data warehousing DBs use different types of architecture, both from a DB perspective and infrastructure layer
 
 ### ElastiCache
-* Exam Scenario question: you may get a question asking how to improve DB performance for frequently accessed queries.
+* (E) Exam Scenario question: you may get a question asking how to improve DB performance for frequently accessed queries.
 The answer could be to setup ElastiCache to cache those queries
 
 ### Data Migration Services (DMS)
@@ -717,8 +717,9 @@ all of them
 extra step of removing data from the result set. Avoiding using scan operation on a large table with a filter that
 removes many results, if possible. Also, as a table grows, the scan slows. The scan operation examines every item for
 the requested values and can use up the provisioned throughput for a large table in a single operation
-* For quicker response times, design your tables in a way that can use the ```Query```,```Get```, or ```BatchGetItem``` APIs.
-Alternatively, design you application to use scan operations in a way that minimized impact on your tables request rate
+* For quicker response times, design your tables in a way that can use the ```Query```,```Get```, or ```BatchGetItem``` 
+APIs. Alternatively, design you application to use scan operations in a way that minimized impact on your tables 
+request rate
 
 
 ### DynamoDB Provisioned Throughput Calculations
