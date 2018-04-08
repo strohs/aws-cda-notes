@@ -875,7 +875,7 @@ Used when the **order** of operations and events is critical. FIFO queues not av
     * the order in which messages are sent and received is strictly preserved
 * cannot convert existing standard queues into FIFO queues
 
-### Dead Letter Queue
+#### Dead Letter Queues
 * a type of Standard Queue or FIFO Queue that contains messages that failed a certain number of processing attempts
 * you use dead-letter queues to isolate these messages for further analysis
 
@@ -919,6 +919,7 @@ each file specifying the command (jpeg-encode) and the location of the file in A
 * SQS Standard Queues are engineered to provide **at least once** delivery of all messages in its queues. Although 
 most of the time each message will be delivered to your application exactly once, you should design your system so 
 that processing a message more than once does not create any errors or inconsistencies
+* A SQS message can include only XML, JSON, and unformatted text
 * message size is **256KB**
     * To send messages larger than 256KB, use the Amazon SQS Extended Client Library for Java
 * A single Amazon SQS message queue can contain an unlimited number of messages
@@ -935,18 +936,19 @@ that processing a message more than once does not create any errors or inconsist
         ```ChangeMessageVisibility``` action to specify a new timeout value. SQS will restart the timeout period using 
         the new value
 * Long Polling
+    * ```ReceiveMessage( WaitTimeSeconds )``` - API call to enable long polling, must set WaitTimeSeconds parameter 
+        * **MAX poll wait time = 20 seconds**
     * SQS Long polling is a way to retrieve messages from your SQS queues. While the traditional SQS short polling returns
     immediately, even if the queue being polled is empty, SQL long polling doesn't return a response until a message
     arrives in the queue, or the long poll times out. SQS long polling makes it easy and inexpensive to retrieve messages
     from your SQS queue as soon as they are available.
-    * **MAX poll time out = 20 seconds**
     * Long polling is a way to save you money, especially if a queue is empty
 * Fanning Out
     * Create an SNS topic first using SNS. Then create and subscribe multiple SQS queues to the SNS topic
     * Now whenever a message is sent to the SNS topic, the message will be fanned out to the SQL queues, 
         * i.e. SNS will deliver the message to all the SQS queues that are subscribed to the topic
     * fanning out is a technique to distribute a message coming in on a single queue, onto N number of queues
-* Messages in queues can be encrypted using Amazon AWS KMS (but this feature not available in all regions)
+* Messages in queues can be encrypted using Amazon AWS SSE-KMS (but this feature not available in all regions)
 
 
 
@@ -999,20 +1001,55 @@ dynamically subscribe for identical copies of the same notification
     * Do you need to *pull* or *poll* messages? use SQS
 * (E) SNS message type for email push is JSON
 
+## Format of structured notification messages
+The notification message sent over **HTTP,HTTPS,Email-JSON and SQS** will consist of a simple JSON object, which includes
+the following information:
+* MessageId: a UUID
+* Timestamp
+* TopicArn: topic to which this message was published
+* Type: the type of the delivery message (eg. 'Notification')
+* UnsubscribeURL: a link to unsubscribe the end-point from this topic
+* Message: the payload (body) of the message
+* Subject: the subject field (if one was provided)
+* Signature - base64 encoded signature of the message
+* SignatureVersion - version of the Amazon SNS signature used
+
+**Email** transport messages only contain the message body
+
+
+
 ## SNS Summary
 (E)
 * SNS consists of a topic and each topic can have multiple subscriptions
+* Be default, SNS offers **10 million** subscriptions per topic, and **100,000** topics per account
+* With the exception of SMS messages, Amazon SNS messages can contain up to **256KB** of text data, including XML, 
+JSON and unformatted text
 * SNS subscriptions support multiple delivery protocols
     * Email
     * Email as JSON
     * HTTP
     * HTTPS
-    * Amazon SQS
-    * Application
+    * Amazon SQS 
+        * standard queues only
+    * Application (i.e. mobile app. push notifications)
+        * Amazon Device Messaging
+        * Apple Push Notification Service
+        * Google Cloud Messaging (GCM)
+        * Windows Push Notification Service
+        * Microsoft Push Notification Service
+        * Baidu Cloud Push (for Android devices in China)
     * AWS Lambda
     * SMS
 * Messages can be customized for each protocol above
 * Instantaneous **push** based delivery (no polling)
+* messages could be delivered out of order
+* AWS does **NOT** guarantee delivery of messages to subscribed end-points (due to potential internet issues, or 
+email restrictions)
+    * SNS implements a 4-phase retry policy
+        1. retries with no delays in between attempts
+        2. retries with some minimum delay in between attempts
+        3. retries with some back-off model (linear or exponential)
+        4. retries with some maximum delay between attempts
 
 
 Simple Work Flow (SWF)
@@ -1487,6 +1524,7 @@ between your VPC and the other service does not leave the Amazon network
     * Security Groups
         * a virtual firewall for an **instance** that controls traffic (into/out of) it
 * 1 subnet = 1 availability zone (subnets cannot span AZs)
+* all subnets in an Amazon VPC have routes to other subnets (by default)
 * security groups are **stateful**
     * opening an inbound port automatically opens the corresponding outbound port
 * network access control lists are **stateless**
