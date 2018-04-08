@@ -866,18 +866,23 @@ you can reorder the messages when the queue returns them. Or see if you can use 
 ### FIFO Queues
 Used when the **order** of operations and events is critical. FIFO queues not available in all regions
 * High Throughput
-    * support 300 messages per second (300 send,receive,or delete operations per second)
-    * when you batch 10 messages per operation, FIFO queues can support up to 3,000 messages per second
-* Exactly Once Processing
+    * support **300 messages per second** (300 send,receive,or delete operations per second)
+    * when you **batch 10 messages per operation**, FIFO queues can support up to **3,000 messages per second**
+* **Exactly Once Processing**
     * a message is delivered once and remains available until a consumer processes and deletes it. Duplicates are
     not introduced into the queue
-* First-in-First-out delivery
+* **First-in-First-out delivery**
     * the order in which messages are sent and received is strictly preserved
+* cannot convert existing standard queues into FIFO queues
+
+### Dead Letter Queue
+* a type of Standard Queue or FIFO Queue that contains messages that failed a certain number of processing attempts
+* you use dead-letter queues to isolate these messages for further analysis
 
 
 
 ### Example
-* suppose you have a number of image files to encode. In an SQS worker queue you create an Amazon SQL message for
+* suppose you have a number of image files to encode. In an SQS worker queue you create an Amazon SQS message for
 each file specifying the command (jpeg-encode) and the location of the file in Amazon S3
 * A pool of Amazon EC2 instances running the needed image processing software does the following:
     1. Asynchronously **pulls** task messages from the queue
@@ -897,21 +902,38 @@ each file specifying the command (jpeg-encode) and the location of the file in A
     * message size will be 4 * 64KB chunks
     * Each 64KB chunk of payload is billed as 1 request. For example, a single API call with a 256KB payload will be
     billed as 4 requests
+* SQS Free Tier provides you with **1 million requests per month** at no charge
+
+## SQS Basic API Calls
+* ```SendMessage``` - send a message to a specified queue
+    * ```SendMessageBatch```
+* ```ReceiveMessage``` - call this to get a single message from a queue
+* ```DeleteMessage``` - call this once your code in done processing the message
+    ```DeleteMessageBatch```
+* ```ChangeMessageVisibility``` - changes the message visibility timeout of a received message
+* ```PurgeQueue``` - delete all messages in a queue
 
 
 ## SQS Developer Exam Tips
 * SQS can be auto-scaled
-* SQS Standard Queues are engineered to provide "at least once" delivery of all messages in its queues. Although 
+* SQS Standard Queues are engineered to provide **at least once** delivery of all messages in its queues. Although 
 most of the time each message will be delivered to your application exactly once, you should design your system so 
 that processing a message more than once does not create any errors or inconsistencies
-* messages size is 256KB
+* message size is **256KB**
+    * To send messages larger than 256KB, use the Amazon SQS Extended Client Library for Java
+* A single Amazon SQS message queue can contain an unlimited number of messages
+    * there is a **120,000 limit for the number of in-flight messages for a standard queue**
+    * **20,000 for a FIFO queue**
+* You can create any number of message queues
 * SQS Messages can be delivered multiple times and **in any order**
     * if you need priority of one type of message over another, you would create a separate queue for those priority
     messages
-* 12 hours visibility is MAXIMUM time out (default is 30 seconds)
-    * If the default timeout is insufficient for processing a particular message, you can call 
-    ```ChangeMessageVisibility``` action to specify a new timeout value. SQS will restart the timeout period using 
-    the new value
+* Visibility Timeout
+    * a period of time during which Amazon SQS prevents other consuming components from receiving and processing a message
+    * **12 hours visibility is MAXIMUM** time out (default is **30 seconds**)
+        * If the default timeout is insufficient for processing a particular message, you can call 
+        ```ChangeMessageVisibility``` action to specify a new timeout value. SQS will restart the timeout period using 
+        the new value
 * Long Polling
     * SQS Long polling is a way to retrieve messages from your SQS queues. While the traditional SQS short polling returns
     immediately, even if the queue being polled is empty, SQL long polling doesn't return a response until a message
@@ -924,6 +946,7 @@ that processing a message more than once does not create any errors or inconsist
     * Now whenever a message is sent to the SNS topic, the message will be fanned out to the SQL queues, 
         * i.e. SNS will deliver the message to all the SQS queues that are subscribed to the topic
     * fanning out is a technique to distribute a message coming in on a single queue, onto N number of queues
+* Messages in queues can be encrypted using Amazon AWS KMS (but this feature not available in all regions)
 
 
 
