@@ -909,7 +909,7 @@ each file specifying the command (jpeg-encode) and the location of the file in A
     * ```SendMessageBatch```
 * ```ReceiveMessage``` - call this to get a single message from a queue
 * ```DeleteMessage``` - call this once your code in done processing the message
-    ```DeleteMessageBatch```
+    * ```DeleteMessageBatch```
 * ```ChangeMessageVisibility``` - changes the message visibility timeout of a received message
 * ```PurgeQueue``` - delete all messages in a queue
 
