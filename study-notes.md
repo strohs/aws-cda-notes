@@ -1016,7 +1016,14 @@ the following information:
 
 **Email** transport messages only contain the message body
 
-
+## Mobile Push High Level Steps
+Amazon SNS can send mobile push messages directly to an app on a mobile device. SNS can also send messages to mobile
+endpoints subscribed to a topic.
+1. Request credentials from Mobile platforms (APNS, GCM, etc...)
+2. Request token from mobile platforms
+3. Create platform application object
+4. Create platform endpoint object
+5. publish message to mobile endpoint 
 
 ## SNS Summary
 (E)
