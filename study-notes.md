@@ -330,7 +330,7 @@ devices and facilities
 * (E) Files can be from **0 Bytes to 5TB**
 * (E) there is unlimited storage, AWS will add more storage as needed
 * (E) files are stored in buckets
-* (E) S3 is a universal namespace, names must be unique globally
+* (E) S3 is a universal namespace, **names must be unique globally**
 * (E) S3 will automatically creates a DNS for your bucket
     * https://s3[-us-east-1].amazonaws.com/yourbucketname
         * part in square brackets my no longer by needed
@@ -476,7 +476,7 @@ locations of the user, the origin of the webpage and a content delivery server
 * **RTMP** - used for media streaming
 
 ### Creating a CDN (lab)  (E) 
-* know that you can configure the Default TTL (it defaults to 24 hours), you can change it if you have content that
+* know that you can configure the Default TTL (it **defaults to 24 hours**), you can change it if you have content that
 needs to expire quickly
 * you can restrict use access to content using **Signed URLs** or **Signed Cookies**
 * Geographic Restrictions
@@ -570,6 +570,14 @@ which will in turn transfer to S3.
 * You can upload big files to S3 using multi-part upload
     * from 5MB to 5TB in size
 * You can upload up to **5GB** in a **single operation**
+* can create 100 buckets per AWS account (default)
+* Bucket Names
+    * at least 3 characters long, but no more than 63
+    * Bucket names must be a series of one or more labels. 
+        * Adjacent labels are separated by a single period (.)
+        * Bucket names can contain lowercase letters, numbers, and hyphens
+        * Each label must start and end with a lowercase letter or a number
+    * bucket names CANNOT be ip addresses (ie. 192.123.45.11)
 
 
 Databases 101
