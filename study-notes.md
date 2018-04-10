@@ -67,9 +67,16 @@ domain (such as Facebook, Active Directory, LDAP)
 * If your identity store is not compatible with SAML 2.0, then you can build a custom identity broker application 
 to perform a similar function. The broker application authenticates users, requests temporary credentials for 
 users from AWS, and then provides them to the user to access AWS resources.
-* To get temporary security credentials, the identity broker application calls either ```AssumeRole``` or 
+* To get **temporary** security credentials, the identity broker application calls either ```AssumeRole``` or 
 ```GetFederationToken``` to obtain temporary security credentials, depending on how the developer wants to manage the 
 policies for users and when the temporary credentials should expire
+    * ```GetFederationToken``` - Returns a set of temporary security credentials (consisting of an access key ID, 
+    a secret access key, and a security token) call this using the long-term security credentials of an IAM user, 
+    this call is appropriate in contexts where those credentials can be safely stored, usually in a server-based 
+    application
+    * ```AssumeRole``` - Returns a set of temporary security credentials (consisting of an access key ID, a secret 
+    access key, and a security token) that you can use to access AWS resources that you might not normally have 
+    access to. Typically, you use AssumeRole for cross-account access or federation
  
 #### Scenario 1 (gets user credentials from LDAP, and sends those to AWS STS)
 1. Develop an Identity Broker to communicate with LDAP and AWS STS (you develop this in house)
@@ -629,7 +636,7 @@ A fast and flexible NoSQL database service for all applications that need consis
  at any scale. It is a fully managed DB and supports both document and key-value data models. Its flexible data
  model and reliable performance make it a great fit for mobile, gaming, web etc...
 
-### DynamoDB 101
+## DynamoDB 101
 * stored on SSDs
 * spread across three facilities in an AWS Region
 * Eventually Consistent Reads (default) 
@@ -645,7 +652,7 @@ A fast and flexible NoSQL database service for all applications that need consis
 * DynamoDB supports nested attributes up to 32 levels deep.
 
 
-### DynamoDB Data Model
+## DynamoDB Data Model
 * Tables
     * a collection of Items
 * Items
@@ -656,7 +663,7 @@ A fast and flexible NoSQL database service for all applications that need consis
     * like columns of data in a RDB
             
 
-### DynamoDB Key Types
+## DynamoDB Key Types
 * Primary Keys (two types)
     * Single Attribute key
         * consists of a unique ID
@@ -673,7 +680,7 @@ A fast and flexible NoSQL database service for all applications that need consis
                     * two items can have the same partition key; however, **they must have a different sort key**
                 * **all items with same partition key are stored together, in sorted order, by sort key value**
 
-### DynamoDB Indexes
+## DynamoDB Indexes
 Many applications might benefit from having one or more **secondary** (or alternate) keys available to allow efficient 
 access to data with attributes other than the primary key. To address this, you can create one or more secondary 
 indexes on a table. Dynamo Supports two types:
@@ -682,44 +689,45 @@ indexes on a table. Dynamo Supports two types:
     * can **only** be created when creating a table
     * cannot be removed or modified after table creation
     * can create a maximum of 5 local secondary indexes per table
-    * A local secondary index is "local" in the sense that every partition of a local secondary index is scoped to a 
-    table partition that has the same partition key
-    * LSIs limit the total size of all elements (tables and indexes) to 10 GB per partition key value
+    * All scalar data types (Number, String, Binary) can be used for the sort key element of the local secondary 
+    index key
+    * LSIs limit the total size of all elements (tables and indexes) to **10 GB per partition key value**
 * (E) Global Secondary Index (GSI)
     * an index with a partition or a partition-and-sort key that can be **different** from those already on the table
     * can be created at table creation time or added later
     * can create a maximum of 5 global secondary indexes per table
     * GSIs do not enforce data co-location, or a maximum partition size (unlike LSIs)
-    * A global secondary index is considered "global" because queries on the index can span all items in a table, 
-    across all partitions
 
-### DynamoDB Streams
+
+## DynamoDB Streams
 * captures any kind of modification of the DynamoDB tables
     * if a new item is added to the table, the stream captures an image of the entire item, including all its attributes
     * if an item is updated, the stream captures the *before* and *after* image of any attributes that were modified
     in the item
     * if any item is deleted from the table, the stream captures an image of the entire item before it was deleted
-* data is stored in DynamoDB streams for 24 hours
+* data is stored in DynamoDB streams for **24 hours**
     * you can process the data during this time using e.g. Lambda
 
-### DynamoDB Query vs Scan
-#### Queries
+## DynamoDB Query vs Scan
+### Queries
 * (E) a query operation finds items in a table using only primary key attribute values. You must provide a partition
 attribute name and distinct value to search for.
-* you can optionally provide a sort key attribute name and value and use a comparison operator to refine search results
+    * you can optionally provide a sort key attribute name and value and use a comparison operator to refine 
+    search results
 * (E) By default, a query returns all of the data attributes for items with the specified primary keys; however, you can
 use ```ProjectionExpression``` parameter so that the query only returns some of the attributes rather than all of them
 * (E) Query results are always sorted by the sort key. If the data type of the sort key is a number, the results are
 returned in numeric order; otherwise, the results are returned in order of the ASCII character code values. By default
 the sort order is ascending, to reverse the order, set the ```ScanIndexForward``` parameter to **false**
 * by default, queries are always eventually consistent but can be changed to strongly consistent
+    * in java we use: ```.withConsistentRead(true)```
 
-#### Scans
+### Scans
 * (E) a scan operation examines every item in the table and returns all of the data attributes for every item. However,
 you can use the ```ProjectionExpression``` parameter so that the scan only returns some of the attributes, rather than
 all of them
 
-#### What to use? Query vs Scan?
+### What to use? Query vs Scan?
 * Generally a query is more efficient than a Scan
 * A Scan always scans the entire table then filters out values to provide the desired result, eventually adding the
 extra step of removing data from the result set. Avoiding using scan operation on a large table with a filter that
@@ -730,7 +738,7 @@ APIs. Alternatively, design you application to use scan operations in a way that
 request rate
 
 
-### DynamoDB Provisioned Throughput Calculations
+## DynamoDB Provisioned Throughput Calculations
 * Unit of Read provisioned throughput
     * all reads are rounded up to increments of 4KB
     * Eventually Consistent Reads (default) consist of **2 reads per second**
@@ -801,7 +809,7 @@ set the write throughput to?
     * (E) 400 HTTP Status Code - **ProvisionedThroughputExceededException**
     * You exceeded your maximum allowed provisioned throughput for a table or for one or more global secondary indexes
 
-### Using Web Identity Providers with DynamoDB
+## Using Web Identity Providers with DynamoDB
 * You can authenticate users using Web Identity providers
     * Facebook, Google, Amazon, or any other Open-ID connect compatible identity provider
     * this is done using ```AssumeRoleWithIdentity``` API
@@ -813,8 +821,39 @@ set the write throughput to?
     IAM role
     4. App can now access DynamoDB from between 15 minutes to 1 hour (default is 1 hour)
 
+## DynamoDB APIs
+* CreateTable - create a new table and its indices
+* UpdateTable - update provisioned throughput values
+* DeleteTable - 
+* DescribeTable - return table size, status and index information
+* ListTables - return a list of all tables associated with the current account and endpoint
+* PutItem - creates a new item, or replaces an old item with a new item
+* (E) BatchWriteItem - inserts, replaces or deletes multiple items across multiple tables in a single request
+    * supports batches up to 25 items to Put or Delete, **max total request size 16MB**
+* UpdateItem - edit an existing items attributes. can use conditional operators
+* DeleteItem - delete a single item by primary key. can use conditional operators
+* GetItem - returns a set of attributes for an item that matches the primary key
+* (E) BatchGetItem - returns attributes for multiple items across multiple tables using their primary key
+    * size limit of **16MB** and returns a maximum of 100 items
+* Query - gets one or more items using a primary key, or from a secondary index using the index key
+    * can use comparison operators and expressions to narrow the scope of the query
+    * a single response has a size limit of **1MB**
+* Scan - gets all items and attributes by performing a full scan across the table or secondary index
+    * response has a **1MB** size limit
 
-### Other important aspects of DynamoDB
+## DynamoDB Data Types
+* Scalar Data Types:
+    * Number, String, Binary, Boolean
+    * NULL
+* Collection Data Types
+    * Number Set
+    * String Set
+    * Binary Set
+    * heterogeneous list
+    * heterogeneous map
+    
+
+## Other important aspects of DynamoDB
 * (E) Conditional Writes
     * update an item if some conditional statement is true
         * if item = $10 then update it to $12
@@ -837,6 +876,10 @@ set the write throughput to?
     * if your application needs to read multiple items, you can use ```BatchGetItem``` API. 
     * A single ```BatchGetItem``` request can retrieve up to 16MB of data, which can contain as many as 100 items. 
     * In addition, a single ```BatchGetItem``` request can retrieve items from multiple tables
+* There are no throughput limits, BUT If you wish to exceed throughput rates of 10,000 writes/second or 
+10,000 reads/second, you must first contact Amazon through this online form
+
+
 
 
 Simple Queue Service (SQS)
