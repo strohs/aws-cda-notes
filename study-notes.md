@@ -537,9 +537,9 @@ offered.
     * block storage (uses iSCSI)
     * two types of volume gateway offered:
         * **Stored Volumes**
-            * entire dataset is stored onsite and is asynchronously backed up to S3
+            * entire dataset is stored on-site and is asynchronously backed up to S3
         * **Cached Volumes**
-            * entire dataset is in S3, and only most frequently accessed data is cached onsite
+            * entire dataset is in S3, and only most frequently accessed data is cached on-site
 * **Gateway Virtual Tape Library (VTL)**
     * for backup, but uses popular backup appliances like NetBackup,Backup Exec, Veam, etc....
 * Exam may present you with scenario questions and ask you to choose the best option from among the 4 gateway types
