@@ -878,6 +878,8 @@ set the write throughput to?
     * In addition, a single ```BatchGetItem``` request can retrieve items from multiple tables
 * There are no throughput limits, BUT If you wish to exceed throughput rates of 10,000 writes/second or 
 10,000 reads/second, you must first contact Amazon through this online form
+* When defining primary keys, try to use a many to few principle
+* initial limit of 256 tables per region, can be upped by contacting Amazon support
 
 
 
@@ -1079,6 +1081,8 @@ endpoints subscribed to a topic.
 ## SNS Summary
 (E)
 * SNS consists of a topic and each topic can have multiple subscriptions
+    * max topic name length is 256 characters
+* once a message is successfully published to a topic, it cannot be recalled
 * Be default, SNS offers **10 million** subscriptions per topic, and **100,000** topics per account
 * With the exception of SMS messages, Amazon SNS messages can contain up to **256KB** of text data, including XML, 
 JSON and unformatted text
@@ -1144,6 +1148,7 @@ of types, executions, and task lists from others within the same account
 * You can register a domain by using the AWS management console or by using the ```RegisterDomain``` action in the
 Amazon SWF API
     * the parameters are specified in JSON format
+* 100 domains MAX per aws account
 
 * How long for workflows?
     * (E) **maximum workflow can be 1 year and the value is always measured in seconds**
@@ -1267,7 +1272,7 @@ Templates
 ```
 
 ## Outputting Data
-* (E) You can use ```Fn:GetAtt``` to output data.
+* (E) **You can use ```Fn:GetAtt``` to output data**
     * prints the values of the resources that have been configured by CloudFormation
 
 ```json
@@ -1287,7 +1292,7 @@ Templates
     * if stack fails to start-up, it will automatically roll-back and delete any resources it created
 * You are charged for errors (e.g. any EC2 instances you accidentally spin up...)
 * CloudFormation itself is free (the resources it creates are not)
-* Stacks can wait for applications to be provisioned using the ```WaitCondition```
+* **Stacks can wait for applications to be provisioned using the ```WaitCondition```**
     * e.g. you need to wait for some resource to be created first, before moving on
 * You can use ```Fn:GetAtt``` to output data
 * Route53 is completely supported. This includes creating **new** hosted zones or **updating** existing ones
