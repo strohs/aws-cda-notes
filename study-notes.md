@@ -879,7 +879,8 @@ set the write throughput to?
 * There are no throughput limits, BUT If you wish to exceed throughput rates of 10,000 writes/second or 
 10,000 reads/second, you must first contact Amazon through this online form
 * When defining primary keys, try to use a many to few principle
-    * you want a partition key that has a large number of distinct values and that are requested fairly uniformly
+    * you want a partition key that has a large number of distinct values and that are requested fairly uniformly, as
+    randomly as possible
 * initial limit of 256 tables per region, can be upped by contacting Amazon support
 
 
