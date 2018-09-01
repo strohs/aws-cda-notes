@@ -1,4 +1,35 @@
 ## Lambda
+
+### Limits
+* Memory
+    * **128MB** min to **3008MB** max (in 64MB increments)
+* ephemeral disk space in /tmp **512MB**
+* number of processes and threads combined **1024**
+* max execution duration **5 minutes**
+* Synchronous (RequestResponse) invoke request body payload size: **6MB**
+* Asynchronous (Event) invoke request **128MB**
+* Deployment package size (compressed .zip/.jar) **50MB**
+* Total size of all deployment packages per region **75GB**
+
+* Concurrency Execution Limits
+    * Account Level limits:
+        * **1000** by default
+        * can be increased by opening a case in AWS Support Center
+        * there is also an **immediate concurrency burst limit** that varies per region
+        * if the burst limit is reached, AWS will increase lambda function executions by **500 per minute**
+    * Function Level limits 
+        * set per function
+            * set in the console or via aws cli (`PutFunctionConcurrency`)
+            * Use the `GetFunction` cli command to view cocurrency limits for a specific function 
+        * counts towards the account level limits
+        * By setting a concurrency limit on a function, Lambda guarantees that allocation will be applied 
+        specifically to that function, regardless of the amount of traffic processing remaining functions
+        * once concurrency limit is reached for a function, the function is throttled
+
+#### Throttling behavior        
+    
+
+     
 ### Handlers (in Java)
 * two approaches for creating a handler
     * load handler method directly without implementing an interface
