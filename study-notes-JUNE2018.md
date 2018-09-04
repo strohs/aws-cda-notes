@@ -22,6 +22,7 @@
     * if the application and lambda function are owned by different accounts, the account the owns the lambda function
     must allow cross-account permissions in the permission policy associated with the lambda function
 
+
 ### Limits
 * Memory
     * **128MB** min to **3008MB** max (in 64MB increments)
@@ -40,7 +41,7 @@
 * Account Level limits:
     * **1000** by default
     * can be increased by opening a case in AWS Support Center
-    * there is also an **immediate concurrency burst limit** that **varies per region**
+    * there is also an immediate concurrency burst limit that **varies per region**
     * if the burst limit is reached, AWS will increase lambda function executions by **500 per minute**
 * Function Level limits 
     * set per function
@@ -130,6 +131,8 @@ rate at which your lambda is invoked
     * lambda will attempt to process the throttled batch of records until it is successfully invoked (in which case
     it is automatically deleted from the queue) or until the `MessageRetentionPeriod` set for the queue expires
 
+
+
 ### Monitoring concurrency usage
 uses cloudwatch metrics
 * ConcurrentExecutions - concurrent executions at the account level, and for any function with a custom concurrency limit
@@ -142,15 +145,15 @@ uses cloudwatch metrics
 * two approaches for creating a handler
     * load handler method directly without implementing an interface
     * implement a standard interface provided by `aws-lambda-core-library`
-* general syntax for handler is `outputType handler-name(inputType input, Context context) {...}`
+* general syntax for handler is `OutputType handler-name(InputType input, Context context) {...}`
     * in order for handler to be invoked, input data must be serializable into the data type of the input parameter
-    * inputType - can be event data published by an event source or custom input that a developer provides
+    * InputType - can be event data published by an event source or custom input that a developer provides
     such as String or a custom object(must be serializable)
     * outputType - 
         * if you plan to invoke the lambda synchronously (using `RequestResponse` invocation type) 
         you can return the output of your function using any of the supported data types
         * if you plan to invoke asynchronously (using the `Event` invocation type), the output type should
-        be void
+        be `void`
             * Example: S3 and SNS use the `Event` invocation type
 * inputType and outputType can be:
     * Simple Java types (AWS Lambda supports the String, Integer, Boolean, Map, and List types) 
