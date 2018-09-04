@@ -53,40 +53,40 @@
 
 
 ### Supported Event Sources
-This topic lists the supported AWS services that you can configure as event sources for AWS Lambda functions.
-For poll-based sources, the lambda function maintains the event source mapping. For all others, the event source
-mapping is maintained by the source
-* **Amazon DynamoDB** (poll based, stream based)
-* **Amazon Kinesis Data Streams**  (poll based, stream based)
-* **Amazon Simple Queue Service** (poll based)
-* Amazon Simple Notification Service
-* Amazon S3
-* Amazon Simple Email Service
-* Amazon Cognito
-* AWS CloudFormation
-* Amazon CloudWatch Logs
-* Amazon CloudWatch Events
-* AWS CodeCommit
-* Scheduled Events (powered by Amazon CloudWatch Events)
-* AWS Config
-* Amazon Alexa
-* Amazon Lex
-* Amazon API Gateway
-* AWS IoT Button
-* Amazon CloudFront
-* Amazon Kinesis Data Firehose
+* For poll-based sources, the **lambda function maintains the event source mapping**
+* For all others, the event source mapping is maintained by the source
+
+
+| Event Source | (A)Synchronous | Notes |
+|:------------:|:--------------:|:------|
+| Amazon DynamoDB | Sync | polled by lambda,streams must be enabled |
+| Amazon Kinesis Data Streams | Sync | polled by lambda once per second |
+| Amazon Simple Queue Service | Sync | polled by lambda, time affected by `VisibilityTimeout` and `TimeToWait` |
+| Amazon Simple Notification Service | Async | |
+| Amazon S3 | Async | 
+| Amazon Simple Email Service | Async | SES message in SNS event |
+| Amazon Cognito | Sync  |
+| AWS CloudFormation | Async | CloudFormation message in SNS Event
+| Amazon CloudWatch Logs | Async |
+| Amazon CloudWatch Events | Async | can create rules to send events to lambda |
+| AWS CodeCommit | Async | repository events can trigger lambda |
+| Scheduled Events | Async | powered by CloudWatch Events |
+| AWS Config | Async |
+| Amazon Alexa | Sync  | build lambdas to give new skills to Alexa |
+| Amazon Lex | Sync | uses lambda to perform init., validation, fulfillment
+| Amazon API Gateway | Sync |
+| AWS IoT Button | Async | relies on Lambda to perform the button click operation(s)
+| Amazon CloudFront | Async | uses Lambda@Edge to change cloudfront requests and responses |
+| Amazon Kinesis Data Firehose | Sync | lambda can process a stream before it is sent downstream
+| On Demand | Sync or Async | you invoke the lambda (from cli using `invoke` or programmatically)
 
 
 * AWS Lambda provides the `CreateEventSourceMapping` operation for you to create and manage the event source mapping. 
-* The invocation type that these event sources use when invoking a Lambda function is also preconfigured. 
-For example, Amazon S3 always invokes a Lambda function asynchronously and Amazon Cognito invokes a Lambda 
-function synchronously. The only time you can control the invocation type is when you are invoking the 
-Lambda function yourself using the `invoke` operation (for example, invoking a Lambda function on demand 
-from your custom application).
+
 
 ## Scaling Behaviour
 ### Estimating Concurrent invocations
-* In general
+* In general, to estimate concurrent invocations
     * `events (or requests) per second * function duration`
     * ex. S3 lambda function takes 3 secs to process an event. S3 publishes 10 events per seconds = 30 concurrent executions
 * For Poll based sources that are stream based:
