@@ -167,5 +167,45 @@ uses cloudwatch metrics
 
 
 
+### AWS Lambda CLI 
+common command examples:
+* creating a lambda `aws lambda create-function`
 
+        aws lambda create-function \
+        --region <region> \
+        --function-name CreateThumbnail \
+        --zip-file fileb://file-path/CreateThumbnail.zip \
+        --role <role-arn> \
+        --handler CreateThumbnail.handler \
+        --runtime <runtime> \
+        --timeout 10 \
+        --memory-size 1024
 
+* updating existing lambda config
+
+        aws lambda update-function-configuration \
+           --function-name CreateThumbnail  \
+           --region <region> \
+           --timeout <timeout-in-seconds>
+
+* adding permissions to a lambda's access policy
+
+        aws lambda add-permission \
+        --function-name CreateThumbnail \
+        --region region \
+        --statement-id some-unique-id \
+        --action "lambda:InvokeFunction" \
+        --principal s3.amazonaws.com \
+        --source-arn arn:aws:s3:::sourcebucket \
+        --source-account bucket-owner-account-id
+ 
+
+* manually invoking a lambda
+
+        aws lambda invoke \
+        --invocation-type Event \
+        --function-name CreateThumbnail \
+        --region region \
+        --payload file://file-path/inputfile.txt \
+        --profile adminuser \
+        outputfile.txt
