@@ -38,11 +38,15 @@
 
 
 #### Concurrency Limits
-* Account Level limits:
-    * **1000** by default
+* Account Level limits per Region:
+    * **1000** concurrent executions by default
     * can be increased by opening a case in AWS Support Center
-    * there is also an immediate concurrency burst limit that **varies per region**
-    * if the burst limit is reached, AWS will increase lambda function executions by **500 per minute**
+    * If there is a sudden burst in traffic, AWS will increase your concurrently executing functions by a 
+    predetermined amount that **varies per region**
+        * if that burst limit is reached:
+            * AWS will increase lambda function executions by **500 per minute** until either:
+                * the account safety limit is reached
+                * the number of concurrently executing functions is sufficient to process the increased load
 * Function Level limits 
     * set per function
         * set in the console or via aws cli (`PutFunctionConcurrency`)
@@ -118,7 +122,7 @@ rate at which your lambda is invoked
         * the `ThrottleReason` error code explains if there was a function level throttle or account level throttle
         * each service may have its own retry policy
     * Asynchronous invocation:
-        * aws will automatically retry the throttled event for up to six hours, with delays between retries
+        * aws will automatically retry the throttled event for up to **six hours**, with delays between retries
         * you can configure a Dead Letter Queue to investigate why your function was throttled
 * Poll based sources, stream-based (such as kinesis, dynamodb)
     * lamda will attempt to process the throttled batch of records until the time the data expires
