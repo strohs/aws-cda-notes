@@ -1,0 +1,9 @@
+{
+  "Parameters" : {
+    "DBName" : "TestWordPressDB",
+    "DBPassword" : "testwordpassword",
+    "DBRootPassword" : "testwordpassword",
+    "DBUser" : "TestDBuser",    
+    "KeyName" : "MyEC2KeyPair"
+  }
+}

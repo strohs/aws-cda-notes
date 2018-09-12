@@ -216,3 +216,146 @@ common command examples:
         --payload file://file-path/inputfile.txt \
         --profile adminuser \
         outputfile.txt
+
+
+
+
+
+CloudFormation
+=====================================================================================================
+* CloudFormation allows you to take what was once traditional hardware infrastructure and convert it into **code**
+* CloudFormation gives developers and system administrators an easy way to create and manage a collection of related
+AWS resources, provisioning and updating them in an orderly and predictable fashion
+* You don't need to figure out the order for provisioning AWS services or the subtleties of making those dependencies
+work. CloudFormation takes care of it for you
+* After your AWS resources are deployed, you can modify and update them in a controlled and predictable way, in
+effect applying version control to your AWS infrastructure the same way you do with your software
+
+## CloudFormation Stack vs. Template
+* A CloudFormation Template is essentially an architectural diagram
+* A CloudFormation Stack is the end result of that diagram (i.e. what is actually provisioned)
+* You create,update, and delete a collection of resources by creating,updating and deleting stacks using CloudFormation
+Templates
+* CloudFormation templates are in JSON format or YAML
+
+## Elements of a Template
+* Mandatory Elements
+    * List of AWS resources and their associated configuration values
+* Optional Elements
+    * The template's file format and version number
+    * Template parameters
+        * the input values that are supplied at stack creation time. Limit of 60
+    * Output Values
+        * The output values required once a stack has finished building (such as the public IP address, ELB address
+        ,etc.) Limit of 60
+    * List of data tables
+        * used to look up static configuration values such as AMI's etc...
+
+## A Simple Template
+```json
+{
+  "Resources" : { 
+    "HelloBucket" : {
+        "Type":"AWS::S3::Bucket"
+    } 
+  }
+}
+```
+
+## Outputting Data
+* (E) **You can use ```Fn:GetAtt``` to output data**
+    * prints the values of the resources that have been configured by CloudFormation
+
+```json
+{ "PublicIP" : {
+    "Description":"Public IP address of the web server", 
+    "Value" : { 
+        "Fn:GetAtt" : [
+            "WebServerHost", "PublicIp"
+        ]
+    }
+ }
+}
+```
+
+## Exam Tips
+* CloudFormation *automatic rollback on error* is enabled by default
+    * if stack fails to start-up, it will automatically roll-back and delete any resources it created
+* You are charged for errors (e.g. any EC2 instances you accidentally spin up...)
+* CloudFormation itself is free (the resources it creates are not)
+* **Stacks can wait for applications to be provisioned using the ```WaitCondition```**
+    * e.g. you need to wait for some resource to be created first, before moving on
+* You can use ```Fn:GetAtt``` to output data
+* You can use the `Ref` function to refer to an identifying property of a resource.
+    * Frequently, this is the physical name of the resource; however, sometimes it can be an identifier, 
+    such as the IP address for an AWS::EC2::EIP resource or an Amazon Resource Name (ARN) for an Amazon SNS topic
+* Route53 is completely supported. This includes creating **new** hosted zones or **updating** existing ones
+* You can create A-Records, Aliases etc...
+* IAM Role Creation and Assignment is also supported
+* May get scenario question on exam comparing ElasticBeanstalk to CloudFormation
+
+
+
+Elastic Beanstalk
+=======================================================================================
+## Overview
+* With Elastic Beanstalk you can deploy, monitor and scale an application quickly
+* It provides developers or end users with the ability to provision application infrastructure in an almost
+transparent way
+* Elastic Beanstalk enables developers to just "upload their code" and have Elastic Beanstalk provision the underlying
+resources underneath
+* It has a highly abstract focus towards infrastructure, focusing on components and performance, not configuration and
+specifications
+* It attempts to remove or significantly simplify infrastructure management, allowing applications to be deployed into
+infrastructure environments easily
+* AWS invented this so developers that didn't have much AWS experience would start deploying their applications to AWS
+
+## Beanstalk key architecture components
+* Applications are the high level structure in beanstalk
+* Either you entire application is one EB application OR
+    * each logical component of your application can be a EB application or a EB environment within an application
+
+* Applications can have multiple environments (Prod, Staging, Dev, V1,V2,etc) or functional type (front-end, back-end)
+* Environments are either single instances or scalable
+* Environments are either web server environments or worker environments
+
+* application versions are unique packages which represent versions of your apps.
+* each application can have many versions (1:M relationship)
+* application versions can be deployed to environments within an application
+
+## Available Platforms on Elastic Beanstalk
+(E)
+* Preconfigured
+    * PHP
+    * Java
+    * Tomcat
+    * Node.js
+    * Ruby
+    * .NET
+    * Python
+    * Go
+    * Packer
+* Preconfigured - Docker
+    * Glassfish
+    * Go
+    * Python
+* Generic
+    * Docker
+    * Docker multi-container
+    
+## Using Elastic Beanstalk with a Database
+* Two options
+    * have EB create and provision a RDS DB for you
+        * you can then configure it to delete the DB upon application termination, 
+        * or configure it to take a snapshot of your DB and store it on S3 upon application termination 
+    * use an existing RDS database
+        * you create this yourself and then configure EB to use it
+
+## Exam tips
+* You can have multiple versions of your applications
+* Your applications can be split into tiers (Web Tier, Application Tier, Database Tier)
+* You can update your application
+* You can do application updates as well as configuration updates
+    * Deployment policies
+        * All at once, Rolling, Rolling with additional batch, and Immutable
+* You pay for the AWS resources EB configures for you (EB itself is free) 

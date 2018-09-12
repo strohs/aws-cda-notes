@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: an example s3 bucket creation template
+Resources:
+  StrohsHelloBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      AccessControl: PublicRead
