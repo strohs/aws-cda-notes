@@ -1,0 +1,9 @@
+{
+  "Parameters" : {
+    "DBName" : "ProdWordPressDB",
+    "DBPassword" : "prodwordpassword",
+    "DBRootPassword" : "prodwordpassword",
+    "DBUser" : "ProdDBuser",    
+    "KeyName" : "MyEC2KeyPair"
+  }
+}
