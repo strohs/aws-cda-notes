@@ -358,4 +358,30 @@ infrastructure environments easily
 * You can do application updates as well as configuration updates
     * Deployment policies
         * All at once, Rolling, Rolling with additional batch, and Immutable
-* You pay for the AWS resources EB configures for you (EB itself is free) 
+* You pay for the AWS resources EB configures for you (EB itself is free)
+
+
+Cognito
+=======================================================================
+## User Pools
+* use user pools when you have:
+    * users who want to create an account
+    * users who have an existing corporate or social account
+* use user pools when you want:
+    * a managed scalable and secure user directory
+    * user authentication
+    * user profiles
+    * OpenID connect id token, access token, and refresh token to authenticate/authorize against your backend service
+    * OAuth 2.0 flows for your app to authenticate with User Pool
+    * OAuth 2.0 and SAML2 redirect/POST bindings to authenticate with identity providers
+    * integration with API Gateway
+
+## Identity Pools
+* use identity pools if you have:
+    * a user that has already authenticated with a social or corporate identity provider and has a token
+    * a user that is unauthenticated
+* use identity pools if you want:
+    * scoped time-bound AWS credentials for that identity
+    * direct access to AWS services from your web or mobile app
+    * role mapping
+
