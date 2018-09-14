@@ -312,7 +312,7 @@ infrastructure environments easily
 
 ## Beanstalk key architecture components
 * Applications are the high level structure in beanstalk
-* Either you entire application is one EB application OR
+* Either your entire application is one EB application OR
     * each logical component of your application can be a EB application or a EB environment within an application
 
 * Applications can have multiple environments (Prod, Staging, Dev, V1,V2,etc) or functional type (front-end, back-end)
@@ -342,6 +342,9 @@ infrastructure environments easily
 * Generic
     * Docker
     * Docker multi-container
+
+### Custom Platform
+You may also create your own custom platform using *Packer*
     
 ## Using Elastic Beanstalk with a Database
 * Two options
