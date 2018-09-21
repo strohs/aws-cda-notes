@@ -369,7 +369,7 @@ Cognito
 ## User Pools
 * use user pools when you have:
     * users who want to create an account
-    * users who have an existing corporate or social account
+    * users who have an existing corporate or social(facebook,google,etc.) account
 * use user pools when you want:
     * a managed scalable and secure user directory
     * user authentication
