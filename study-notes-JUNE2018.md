@@ -1,4 +1,5 @@
-## Lambda
+Lambda
+========================
 * Lambda functions and event sources are the core components of AWS Lambda
 * Event sources (are usually) the AWS services that can be configured to invoke a lambda function
     * this configuration is called the *event source mapping*. It enables the automatic invocation of your lambda
