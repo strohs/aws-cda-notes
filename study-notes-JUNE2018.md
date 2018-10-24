@@ -65,24 +65,24 @@ Lambda
 
 | Event Source | (A)Synchronous | Notes |
 |:------------:|:--------------:|:------|
-| Amazon DynamoDB | Sync | polled by lambda,streams must be enabled |
-| Amazon Kinesis Data Streams | Sync | polled by lambda once per second |
-| Amazon Simple Queue Service | Sync | polled by lambda, time affected by `VisibilityTimeout` and `TimeToWait` |
+| Amazon DynamoDB | Sync | **polled by lambda**,streams must be enabled |
+| Amazon Kinesis Data Streams | Sync | **polled by lambda** once per second |
+| Amazon Simple Queue Service | Sync | **polled by lambda**, time affected by `VisibilityTimeout` and `TimeToWait` |
 | Amazon Simple Notification Service | Async | |
 | Amazon S3 | Async | 
 | Amazon Simple Email Service | Async | SES message in SNS event |
-| Amazon Cognito | Sync  |
 | AWS CloudFormation | Async | CloudFormation message in SNS Event
 | Amazon CloudWatch Logs | Async |
 | Amazon CloudWatch Events | Async | can create rules to send events to lambda |
 | AWS CodeCommit | Async | repository events can trigger lambda |
 | Scheduled Events | Async | powered by CloudWatch Events |
 | AWS Config | Async |
+| AWS IoT Button | Async | relies on Lambda to perform the button click operation(s)
+| Amazon CloudFront | Async | uses Lambda@Edge to change cloudfront requests and responses |
+| Amazon Cognito | Sync  |
 | Amazon Alexa | Sync  | build lambdas to give new skills to Alexa |
 | Amazon Lex | Sync | uses lambda to perform init., validation, fulfillment
 | Amazon API Gateway | Sync |
-| AWS IoT Button | Async | relies on Lambda to perform the button click operation(s)
-| Amazon CloudFront | Async | uses Lambda@Edge to change cloudfront requests and responses |
 | Amazon Kinesis Data Firehose | Sync | lambda can process a stream before it is sent downstream
 | On Demand | Sync or Async | you invoke the lambda (from cli using `invoke` or programmatically)
 
