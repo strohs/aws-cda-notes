@@ -29,7 +29,7 @@ Lambda
     * **128MB** min to **3008MB** max (in 64MB increments)
 * ephemeral disk space in /tmp **512MB**
 * number of processes and threads combined **1024**
-* max execution duration **5 minutes**
+* max execution duration **15 minutes** (used to be 5 min)
 * Synchronous (RequestResponse) invoke request body payload size: **6MB**
 * Asynchronous (Event) invoke request **128MB**
 * Deployment package size (compressed .zip/.jar) **50MB**
