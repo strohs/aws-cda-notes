@@ -1,3 +1,230 @@
+AWS Certified Developer - Associate (June 2018)
+=====================================
+[AWS Certified Developer](https://aws.amazon.com/certification/certified-developer-associate/)
+## Exam Blueprint
+1. Deployment 22%
+2. Security 26%
+3. Development with AWS Services 30%
+4. Refactoring 10%
+5. Monitoring and Troubleshooting 12%
+
+IAM 101
+=====================================================================================
+* centralized control over your AWS account
+* Shared access to your AWS account
+* Granular permissions
+* Identity Federation
+    * Active Directory
+    * Facebook
+    * Linkedin
+    * plus others....
+* Multifactor Authentication (MFA)
+* Provides temporary access for users/devices and services (as necessary)
+* Allows you to set up password rotation policies
+* supports PCI DSS Compliance
+
+## Important Terms
+* Users - end users (people)
+* Groups - a collections of **users** under one set of permissions
+* Roles - you create roles and assign them to AWS resources
+* Policies - a document that defines one or more permissions
+    * can be shared among users, groups, and roles
+
+* IAM is universal (it applies to all regions (for now))
+* new users have no permissions when first created
+* new users are assigned an access key and secret access key when the user is first created
+    * if you loose them, you have to regenerate them
+
+
+EC2
+=====================================================================
+## EC2 Instances
+* *On Demand* - you pay a fixed rate, by the hour (or second) with no commitment
+    * perfect for users that want low cost and flexibility of AWS EC2 without any up-front payment or long term commitment
+    * applications with short term, spiky, unpredictable workloads that cannot be interrupted
+    * applications being developed or tested EC2 for the first time
+* *Reserved* - provide you with a capacity reservation and offer a significant discount on the hourly charge. 
+1 year or 3 year terms
+    * applications with steady state or predictable usage
+    * applications that require reserved capacity
+    * users can make up front payment costs to reduce their total computing costs even further
+        * *Standard RIs* (up to 75% off on-demand)
+        * *Convertible RIs* (up to 54% off on-demand) feature the ability to change the attributes of the RI as long as
+        the exchange results in the creation of RIs of equal of greater value
+        * *Scheduled RIs* are available to launch within the time window you reserve. This allows you to match your
+        capacity reservation to a predictable recurring schedule that only requires a fraction of a day, week, or month
+* *Spot* - enable you to bid whatever price you want for an instance capacity, providing for greater savings if your
+applications have flexible start/end times
+    * application that have flexible start and end times
+    * applications that are only feasible at very low compute prices
+* *Dedicated Hosts* - Physical EC2 server dedicated for your use. Dedicated hosts can help reduce costs by allowing you
+to use your existing server bound software licenses.
+    * useful for regulatory requirements that may not support multi-tenant virtualization
+    * great for licensing which does not support multi-tenancy or cloud deployments
+    * can be purchased On-Demand (hourly)
+    * can be purchased as a Reservation for up to 70% off the On-Demand price
+
+### EC2 Instance Types
+
+Family | Specialty | Use Case
+:-----:|:---------:|:--------:
+D2 | HDD Dense Storage | File servers,Hadoop,Date warehousing,Massively Parallel Processing (MPP) 
+H1 | HDD Storage | MapReduce-based workloads, distributed file systems such as HDFS
+R4 | Memory Optimized | memory intensive apps, DBs (R = RAM)
+M5 | General purpose | Application Servers
+C5 | Compute Optimized | CPU intensive apps (C=CPU)
+G3 | Graphics Intensive | Video Encoding, 3D app. streaming (G=graphics)
+I3 | High Speed Storage | NoSQL DBs, data warehousing (I=IOPS)
+F1 | Field Programmable Gate Array | genomics,financial analytics,real-time video processing, big data (F=Field)
+T2 | lowest cost general purpose | web servers, small DBs
+P3 | graphics,general purpose GPU | machine learning, bit coins mining
+X1 | Memory Optimized | SAP HANA, Apache SPARK (X=Xtreme Memory Optimized)
+           
+> Remember the acronym **DR MCGIFT PX**
+OR
+FIGHTDRMCPX
+
+## Elastic Block Storage (EBS)
+* allows you to create storage volumes and attach them to EC2 instances. Once attached you can create file systems on
+top of these volumes, run a DB, or use them in any other way you would use a block device. EBS volumes are places in a
+**specific availability zone (AZ)** where they are automatically replicated to protect you from the failure of a single
+component
+    * **these stay within an availability zone, they are not automatically replicated to different AZs**
+
+### EBS Volume Types
+* General Purpose SSD (GP2)
+    * balance both price and performance
+    * ratio of 3 IOPS per GB with up to 10,000 IOPS and the ability to burst up to 3000 IOPS for extended periods of
+    time for volumes at 3334 GB and above
+* Provisioned IOPS SSD (IO1)
+    * for I/O intensive applications such as large relational/NoSQL DBs
+    * **use these if you need more than 10,000 IOPS**
+    * can provision up to 20,000 IOPS per volume
+* Throughput Optimized HDD (ST1)
+    * Big Data, Data Warehouses, Log Processing
+    * Large amounts of sequential data
+    * **cannot be a boot volume**
+* Cold HDD (SC1)
+    * lowest cost storage for infrequently accessed workloads
+    * file server
+    * **cannot be a boot volume**
+* Magnetic (Standard)
+    * lowest cost per GB of all EBS volume types that is bootable
+    * ideal for workloads where data is accessed infrequently + applications where the lowest storage cost is important
+
+
+### EC2 Security Groups
+* virtual firewall
+* one EC2 instance can have multiple security groups
+* any change you make to a security group applies instantly
+* security group rules are **stateful**, if you add an inbound rule, an outbound rule is also added
+    * eg. added an inbound rule for HTTP, will also automatically add an outbound rule
+* security group inbound rules **cannot block or deny any traffic**
+    * they only **allow** traffic in
+        * Network Access Control Lists will let you deny traffic
+* inbound traffic is initially blocked by default
+* all outbound traffic initially allowed by default
+* any number of EC2 instances allowed within a security group
+
+
+### EC2 CLI Commands for Developers
+* try to learn the general syntax that the commands use when *associating* something, or *detach* something, *copy* etc...
+* ```describe-instances``` - describe one or more of your EC2 instances
+* ```describe-images``` - list the images available to you, includes **all** public images by default (can take time to run)
+* ```start-instance``` - starts a **stopped** instance
+* ```run-instances``` - creates one or more EC2 instances using an AMI
+
+### EC2 Instance Meta-Data
+let's you get meta-data about the currently running EC2 instance
+* know the URL used to access instance meta-data (know the IP address:)
+    * **http://169.254.169.254/latest/meta-data/**
+* know how to get public IPV4 address using above URL:
+    * **http://169.254.169.254/latest/meta-data/public-ipv4**
+    
+### Exam Tips
+* know differences between On Demand, Spot, Reserved, Dedicated Hosts
+* If AWS terminates the spot instance, you get the hour for free. If **you** terminate the instance, you will be
+charged for the complete hour
+* FIGHT DR McPX
+* SSD
+    * General Purpose SSD - balances price and performance for a wide variety of workloads
+    * Provisioned IOPS SSD - highest performance SSD volume for mission critical low latency or high-throughput
+    workloads
+* Magnetic
+    * Throughput Optimized HDD - low cost HDD volume designed for frequently accessed, throughput-intensive workloads
+    * Cold HDD - lowest cost HDD volume designed for less frequently accessed workloads
+    * Magnetic - previous generation. can be a boot volume
+* CLI Tips
+    * Least Privilege - always give users the minimum amount of access required
+    * Create Groups
+        * assign your users to groups
+        * users will automatically inherit the permissions of the group
+        * group permissions are assigned using policy documents
+    * Secret Access Key
+        * you will see this only once
+        * can be re-generated if you forget to save the secret access key
+        * will need to run `aws configure` again
+    * do not use just one access key
+        * don't create one access and share it across developers
+        * create one access key pair per developer (in case a developer leaves on bad terms)
+
+
+## Elastic Load Balancers (ELB)
+* Application Load Balancer
+    * best suited for balancing of HTTP and HTTPS traffic
+    * operate at layer 7 and are application aware
+    * they are intelligent and you can create advanced request routing, sending specified requests to specific web-servers
+* Network Load Balancer
+    * are best suited for load balancing of TCP traffic where extreme performance is required
+    * operate at connection layer (Layer 4)
+    * Capable of handling millions of requests per second while maintaining ultra-low latencies
+    * will cost the most out of the ELBs
+    * **use these for extreme performance**
+* Classic load Balancer
+    * are the *legacy* load balancers
+    * can balance HTTP/HTTPS applications and use Layer-7 specific features such as *X-Forwarded* and sticky sessions
+        * note that it is not as intelligent as the application load balancer
+    * you can also use strict layer 4 load balancing for applications that rely purely on the TCP protocol
+
+### Load Balancer Errors
+* classic load balancer
+    * if your application stops responding, the classic load balancer responds with a **504 error (Gateway Timeout)**
+    * this means that the application is having issues (not the LB) and the problem could be at the 
+    DB Layer or Web Server layer
+    * identify where the application is failing and **scale it up** not out where possible
+
+### X-Forwarded-For Header (supported by Classic Load Balancer)
+* set by the LB, and contains the IPV4 address of your end user
+
+### Exam Tips
+* know the three types of Load Balancers
+* know the 504 error and how to troubleshoot
+* know about X-Forwarded-For header
+
+### AWS SDKs
+* Available SDKs:
+    * Android
+    * iOS
+    * Java
+    * .Net
+    * Node.js
+    * PHP
+    * Python
+    * Ruby
+    * GO
+    * C++
+    * AWS Mobile SDK, AWS IoT Device SDK
+* default region for (some) SDKs is **US-EAST-1**
+
+
+## Route53
+* Route53 is Amazon's DNS service
+* Allows you to map domain names to:
+    * EC2 Instances
+    * Load Balancers
+    * S3 Buckets
+
+
 Lambda
 ========================
 * Lambda functions and event sources are the core components of AWS Lambda
