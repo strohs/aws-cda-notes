@@ -39,11 +39,11 @@ IAM 101
 EC2
 =====================================================================
 ## EC2 Instances
-* *On Demand* - you pay a fixed rate, by the hour (or second) with no commitment
+* **On Demand** - you pay a fixed rate, by the hour (or second) with no commitment
     * perfect for users that want low cost and flexibility of AWS EC2 without any up-front payment or long term commitment
     * applications with short term, spiky, unpredictable workloads that cannot be interrupted
     * applications being developed or tested EC2 for the first time
-* *Reserved* - provide you with a capacity reservation and offer a significant discount on the hourly charge. 
+* **Reserved** - provide you with a capacity reservation and offer a significant discount on the hourly charge. 
 1 year or 3 year terms
     * applications with steady state or predictable usage
     * applications that require reserved capacity
@@ -53,11 +53,11 @@ EC2
         the exchange results in the creation of RIs of equal of greater value
         * *Scheduled RIs* are available to launch within the time window you reserve. This allows you to match your
         capacity reservation to a predictable recurring schedule that only requires a fraction of a day, week, or month
-* *Spot* - enable you to bid whatever price you want for an instance capacity, providing for greater savings if your
+* **Spot** - enable you to bid whatever price you want for an instance capacity, providing for greater savings if your
 applications have flexible start/end times
     * application that have flexible start and end times
     * applications that are only feasible at very low compute prices
-* *Dedicated Hosts* - Physical EC2 server dedicated for your use. Dedicated hosts can help reduce costs by allowing you
+* **Dedicated Hosts** - Physical EC2 server dedicated for your use. Dedicated hosts can help reduce costs by allowing you
 to use your existing server bound software licenses.
     * useful for regulatory requirements that may not support multi-tenant virtualization
     * great for licensing which does not support multi-tenancy or cloud deployments
@@ -82,7 +82,7 @@ X1 | Memory Optimized | SAP HANA, Apache SPARK (X=Xtreme Memory Optimized)
            
 > Remember the acronym **DR MCGIFT PX**
 OR
-FIGHTDRMCPX
+FIGHT DR MC PX
 
 ## Elastic Block Storage (EBS)
 * allows you to create storage volumes and attach them to EC2 instances. Once attached you can create file systems on
@@ -118,75 +118,7 @@ component
     * only blocks on the device that have changed after your most recent snapshot are saved
 * each snapshot contains all the information needed to restore your data to a new EBS volume
 
-### EC2 Security Groups
-* virtual firewall
-* one EC2 instance can have multiple security groups
-* any change you make to a security group applies instantly
-* security group rules are **stateful**, if you add an inbound rule, an outbound rule is also added
-    * eg. added an inbound rule for HTTP, will also automatically add an outbound rule
-* security group inbound rules **cannot block or deny any traffic**
-    * they only **allow** traffic in
-        * Network Access Control Lists will let you deny traffic
-* inbound traffic is initially blocked by default
-* all outbound traffic initially allowed by default
-* any number of EC2 instances allowed within a security group
 
-
-### EC2 CLI Commands for Developers
-* try to learn the general syntax that the commands use when *associating* something, or *detach* something, *copy* etc...
-* ```describe-instances``` - describe one or more of your EC2 instances
-* ```describe-images``` - list the images available to you, includes **all** public images by default (can take time to run)
-* ```start-instance``` - starts a **stopped** instance
-* ```run-instances``` - creates one or more EC2 instances using an AMI
-
-### EC2 Instance Meta-Data
-let's you get meta-data about the currently running EC2 instance
-* know the URL used to access instance meta-data (know the IP address:)
-    * **http://169.254.169.254/latest/meta-data/**
-* know how to get public IPV4 address using above URL:
-    * **http://169.254.169.254/latest/meta-data/public-ipv4**
-    
-### Exam Tips
-* know differences between On Demand, Spot, Reserved, Dedicated Hosts
-* If AWS terminates the spot instance, you get the hour for free. If **you** terminate the instance, you will be
-charged for the complete hour
-* FIGHT DR McPX
-* EBS Types
-    * SSD
-        * General Purpose SSD - balances price and performance for a wide variety of workloads
-        * Provisioned IOPS SSD - highest performance SSD volume for mission critical low latency or high-throughput
-        workloads
-    * Magnetic
-        * Throughput Optimized HDD - low cost HDD volume designed for frequently accessed, throughput-intensive workloads
-        * Cold HDD - lowest cost HDD volume designed for less frequently accessed workloads
-        * Magnetic - previous generation. can be a boot volume
-* EBS Encryption
-    * volumes created from encrypted snapshots are automatically encrypted
-    * volumes created from unencrypted snapshots are automatically unencrypted
-    * How to encrypt an existing, unencrypted root volume
-        * use a program like bitlocker to encrypt the volume
-        * uses AWS console:
-            1. create a snapshot of the existing volume
-            2. copy the snapshot and tell AWS to encrypt the copy
-            3. can then make an AMI of the snapshot and deploy the encrypted volume
-    * you can encrypt additional attached volumes using the console, CLI, or API
-* CLI Tips
-    * Least Privilege - always give users the minimum amount of access required
-    * Create Groups
-        * assign your users to groups
-        * users will automatically inherit the permissions of the group
-        * group permissions are assigned using policy documents
-    * Secret Access Key
-        * you will see this only once
-        * can be re-generated if you forget to save the secret access key
-        * will need to run `aws configure` again
-    * do not use just one access key
-        * don't create one access and share it across developers
-        * create one access key pair per developer (in case a developer leaves on bad terms)
-* Assigning Roles to EC2 instances is preferred from a security perspective
-* roles are controlled by policies
-* changing a policy on a role will take effect immediately
-* you can attach/detach roles to a running EC2 instance (don't have to stop the instance)
 
 ## Elastic Load Balancers (ELB)
 * Application Load Balancer
@@ -215,33 +147,241 @@ charged for the complete hour
 ### X-Forwarded-For Header (supported by Classic Load Balancer)
 * set by the LB, and contains the IPV4 address of your end user
 
-### Exam Tips
-* know the three types of Load Balancers
-* know the 504 error and how to troubleshoot
-* know about X-Forwarded-For header
-
-### AWS SDKs
-* Available SDKs:
-    * Android
-    * iOS
-    * Java
-    * .Net
-    * Node.js
-    * PHP
-    * Python
-    * Ruby
-    * GO
-    * C++
-    * AWS Mobile SDK, AWS IoT Device SDK
-* default region for (some) SDKs is **US-EAST-1**
-
-
 ## Route53
 * Route53 is Amazon's DNS service
 * Allows you to map domain names to:
     * EC2 Instances
     * Load Balancers
     * S3 Buckets
+
+RDS 101 (Relational Database Service)
+=====================================
+* RDB types offered by AWS (these all support multi-AZ)
+    * SQL Server
+    * ORACLE
+    * MySQL
+    * PostgreSQL
+    * Amazon Aurora
+        * Amazon's Flagship RDB
+        * fully compatible with MySQL
+    * Maria DB
+* RDS is most commonly used for OLTP (online transaction processing)
+    * OLTP - very simple transaction storage and retrieval that happens very frequently
+* Data Warehousing
+    * used for business intelligence
+    * used to pull in very large and complex data sets in order to do complex queries on data
+    * OLTP vs OLAP
+        * Online Transaction Processing differs from Online Analytics Processing in terms of the types of
+        queries you will run
+        * OLAP - ex: net profit for EMEA and Pacific for for a certain product, and want to know stuff like
+        unit cost of radio in each region
+            * pulls in large # of records
+            * much more complex type of processing is done
+    * data warehousing databases will use different type of architecture both from a database perspective and infra-
+    structure layer
+    * *Redshift* is AWS's OLAP database offering
+
+
+## RDS - Back-Ups, Multi-Availability Zones & Read replicas
+### Back-ups
+* two types of backups for AWS:
+    * automated backups
+    * database snapshots
+
+#### Automated backups
+* allow you to recover your database to any point in time within a *retention period*
+* the retention period can be between one and 35 days
+* will take a full daily snapshot and also store transaction logs throughout the day
+* when you do a recovery, AWS will first choose the most recent daily back-up and then apply
+transaction logs relevant to that day
+    * this allows you to do a point in time recovery **down to a second**, within the retention period
+* automated backups are enabled by default
+* the data is stored in S3 and you get free storage space equal to the size of your database
+* backups are taken within a defined window
+    * during the backup window, storage I/O may be suspended while your data is being backed up 
+    and **you may experience elevated latency**
+* automated backups are deleted when you delete the database
+
+#### Database snapshots
+* these are done manually (user initiated)
+* they are stored even after you delete the original RDS instance, unlike automated backups
+
+#### Restoring Backups
+* whenever you restore either and automated back-up or a manual snapshot, the restored version of the database
+will be a **new RDS instance** with a **new DNS endpoint**
+
+### Encryption
+Encryption at rest is supported for:
+* MYSQL
+* Oracle
+* SQL Server
+* PostgreSQL
+* MariaDB
+* Aurora
+
+* Encryption is done using the the AWS Key Management Store (KMS) service
+* once your RDS instance is encrypted, the data stores at rest in the underlying storage is encrypted **as are its
+automated backups, read replicas, and snapshots**
+* at present, **encrypting an existing DB instance is not supported**
+    * to use encryption on an existing DB, you must:
+        1. create a snapshot
+        2. make a copy of that snapshot
+        3. encrypt the copy
+        
+### Multi-AZ
+* Allows you to have an exact copy of your production database in another AZ
+* **AWS handles the replication for you**,  so when your production DB is written to, the writes are automatically
+synchronized to the stand by database
+* in the event of planned DB maintenance, DB instance failure, or an AZ failure, AWS RDS will automatically
+failover to the standby so that DB operations can resume quickly without administrative intervention
+* it is not on by default, you must manually enable it
+* **Multi-AZ is for disaster recovery only, it is not for improving performance**
+* **FOR PERFORMANCE IMPROVEMENTS, YOU NEED READ REPLICAS**
+
+### Read Replicas
+* allow you to have a **read-only** copy of your production database
+* achieved via asynchronous replication from the primary RDS instance to the read replica
+* read replicas are used primarily for very read-heavy DB workloads
+* used for scaling NOT for disaster recovery
+* must have automatic backups turned on in order to deploy a read replica
+* 5 read replicas allowed per production DB (by default)
+* you can have read replicas of read replicas (watch out for latency)
+* each read replica will have its own DNS endpoint
+* you **can** have read replicas that have Multi-AZ enabled
+* you can create read replicas of Multi-AZ source databases
+* read replicas can be promoted to be their own database. This breaks the replication
+* you can have a read replica in a second region
+* available for the following DBs:
+    * MySQL
+    * PostgreSQL
+    * MariaDB
+    * Aurora
+
+## Elasticache
+a Web service that makes it easy to deploy, operate and scale an in-memory cache in the cloud. It improves the
+performance of web applications by allowing you to retrieve information from fast, managed, in-memory caches, instead
+of relying entirely on slower disk-based databases.
+* cached information may include the results of I/O intensive queries or the results of computationally intensive
+calculations
+* supports memcached and redis caching engines
+    
+### memcached
+* a widely adopted memory object caching system
+* ElastiCache is protocol compliant with Memcached
+    * popular tools that you use today with existing memcached environmants will work seamlessly
+
+### redis
+* popular open-source in-memory key value store that supports data structures such as sorted sets and lists
+* Elasticache supports Master/Slave replication and Multi-AZ which can be used to achieve cross AZ
+redundancy 
+
+### difference between redis and memcached
+* redis 
+    * has replication and persistence features
+    * elasticache manages redis more as a relational DB
+    * redis elasticache clusters are managed as stateful entities that include failover, similar to how
+    Amazon RDS manages DB failover
+    * **if you need multi-AZ with failover, use redis**
+    * **Do you need data-types, such as lists, hashes and sets? Use redis**
+    * **Does sorting and ranking datasets in memory help you, such as with leaderboards? Use redis**
+    * **Do you need Pub/Sub capabilities?** redis
+    * **Do you need persistence of your key store? use redis**
+* memcached
+    * designed as a pure caching solution with **no persistence**
+    * elasticache manages memcached nodes as a pool that can grow and shrink, similar to an EC2 autoscaling group
+    * individual nodes are expendable, and elasticache provides additional capabilities here:
+        * automatic node replacement
+        * auto-discovery
+    * **if you are NOT concerned about multi-AZ redundancy, use memcached**
+    * **Is object caching your primary goal? Use memcached**
+    * **Are you interested in as simple a caching model as possbile? memcached**
+    * **Are you planning on running large cache nodes that require multi-threaded performance with utilization of
+    multiple cores? memcached**
+    * **Do you want the ability to scale your cache horizontally (scale-out) as you grow? memcached**
+
+
+## EC2 Section Exam Tips
+* know differences between On Demand, Spot, Reserved, Dedicated Hosts
+* If AWS terminates the spot instance, you get the hour for free. If **you** terminate the instance, you will be
+charged for the complete hour
+* FIGHT DR McPX
+* EBS Types
+    * SSD
+        * General Purpose SSD - balances price and performance for a wide variety of workloads
+            * up to 10,000 IOPS
+        * Provisioned IOPS SSD - highest performance SSD volume for mission critical low latency or high-throughput
+        workloads
+            * when you need > 10,000 IOPS
+    * Magnetic
+        * Throughput Optimized HDD - 
+            * cannot be a boot volume 
+            * low cost HDD volume designed for frequently accessed, throughput-intensive workloads
+        * Cold HDD - 
+            * cannot be a boot volume
+            * lowest cost HDD volume designed for less frequently accessed workloads
+        * Magnetic - previous generation. **can be a boot volume**
+* EBS Encryption
+    * volumes created from encrypted snapshots are automatically encrypted
+    * volumes created from unencrypted snapshots are automatically unencrypted
+    * How to encrypt an existing, unencrypted root volume
+        * use a program like bitlocker to encrypt the volume
+        * uses AWS console:
+            1. create a snapshot of the existing volume
+            2. copy the snapshot and tell AWS to encrypt the copy
+            3. can then make an AMI of the snapshot and deploy the encrypted volume
+    * you can encrypt additional attached volumes using the console, CLI, or API
+* CLI Tips
+    * Least Privilege - always give users the minimum amount of access required
+    * Create Groups
+        * assign your users to groups
+        * users will automatically inherit the permissions of the group
+        * group permissions are assigned using policy documents
+    * Secret Access Key
+        * you will see this only once
+        * can be re-generated if you forget to save the secret access key
+        * will need to run `aws configure` again
+    * do not use just one access key
+        * don't create one access and share it across developers
+        * create one access key pair per developer (in case a developer leaves on bad terms)
+* Roles
+    * Assigning Roles to EC2 instances is preferred from a security perspective
+    * roles are controlled by policies
+    * changing a policy on a role will take effect immediately
+    * you can attach/detach roles to a running EC2 instance (don't have to stop the instance)
+* Elastic Load Balancers (ELB)
+    * know the three types of Load Balancers
+    * know the 504 error (Gateway Timeout) and how to troubleshoot (database or webserver...)
+    * know about `X-Forwarded-For` header
+* RDS
+    * most commonly used for OLTP
+    * supports the following DBs
+        * SQL Server
+        * ORACLE
+        * MySQL
+        * PostgreSQL
+        * Amazon Aurora
+            * Amazon's Flagship RDB
+            * fully compatible with MySQL
+        * Maria DB
+     * if your ec2 instance can't connect to your RDS instance make sure the security group of the RDS
+     instance is allowing inbound connections from the security group of the EC2 instance 
+     on the (DB's port... ex. 3306 for MySQL)
+* redshift - OLAP
+* dynamodb - NoSQL
+* elasticache - in memory caching
+    * memcached
+    * redis
+* multi-AZ
+    * **Multi-AZ is for disaster recovery only, it is not for improving performance**
+* read-replicas
+    * know everything in the read replica section above
+* elasticache
+    * typically given a scenario question where a particular database is under a lot of stress/load. You may be asked
+    which service you should use to alleviate this (Hint: answer is usually elasticache)
+    * Elasticache is a good choice if your DB is particularly read-heavy and NOT prone to frequent changing
+    * **Redshift** is a good choice if the reason your database is feeling stress is because management is running OLAP
+    transactions on it
+    * KNOW the different USE CASES BETWEEN MEMCACHED and REDIS (see above)
 
 
 Lambda
