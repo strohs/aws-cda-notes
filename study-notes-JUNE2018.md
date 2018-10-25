@@ -112,6 +112,11 @@ component
     * lowest cost per GB of all EBS volume types that is bootable
     * ideal for workloads where data is accessed infrequently + applications where the lowest storage cost is important
 
+#### Snapshots
+* allow you to back uo your EBS volumes by taking a point in time "snapshot"
+* snapshots are **incremental** backups
+    * only blocks on the device that have changed after your most recent snapshot are saved
+* each snapshot contains all the information needed to restore your data to a new EBS volume
 
 ### EC2 Security Groups
 * virtual firewall
@@ -146,14 +151,25 @@ let's you get meta-data about the currently running EC2 instance
 * If AWS terminates the spot instance, you get the hour for free. If **you** terminate the instance, you will be
 charged for the complete hour
 * FIGHT DR McPX
-* SSD
-    * General Purpose SSD - balances price and performance for a wide variety of workloads
-    * Provisioned IOPS SSD - highest performance SSD volume for mission critical low latency or high-throughput
-    workloads
-* Magnetic
-    * Throughput Optimized HDD - low cost HDD volume designed for frequently accessed, throughput-intensive workloads
-    * Cold HDD - lowest cost HDD volume designed for less frequently accessed workloads
-    * Magnetic - previous generation. can be a boot volume
+* EBS Types
+    * SSD
+        * General Purpose SSD - balances price and performance for a wide variety of workloads
+        * Provisioned IOPS SSD - highest performance SSD volume for mission critical low latency or high-throughput
+        workloads
+    * Magnetic
+        * Throughput Optimized HDD - low cost HDD volume designed for frequently accessed, throughput-intensive workloads
+        * Cold HDD - lowest cost HDD volume designed for less frequently accessed workloads
+        * Magnetic - previous generation. can be a boot volume
+* EBS Encryption
+    * volumes created from encrypted snapshots are automatically encrypted
+    * volumes created from unencrypted snapshots are automatically unencrypted
+    * How to encrypt an existing, unencrypted root volume
+        * use a program like bitlocker to encrypt the volume
+        * uses AWS console:
+            1. create a snapshot of the existing volume
+            2. copy the snapshot and tell AWS to encrypt the copy
+            3. can then make an AMI of the snapshot and deploy the encrypted volume
+    * you can encrypt additional attached volumes using the console, CLI, or API
 * CLI Tips
     * Least Privilege - always give users the minimum amount of access required
     * Create Groups
@@ -167,7 +183,10 @@ charged for the complete hour
     * do not use just one access key
         * don't create one access and share it across developers
         * create one access key pair per developer (in case a developer leaves on bad terms)
-
+* Assigning Roles to EC2 instances is preferred from a security perspective
+* roles are controlled by policies
+* changing a policy on a role will take effect immediately
+* you can attach/detach roles to a running EC2 instance (don't have to stop the instance)
 
 ## Elastic Load Balancers (ELB)
 * Application Load Balancer
