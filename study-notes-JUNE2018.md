@@ -37,7 +37,7 @@ IAM 101
 
 
 EC2
-=====================================================================
+=======================================================================================================================
 ## EC2 Instances
 * **On Demand** - you pay a fixed rate, by the hour (or second) with no commitment
     * perfect for users that want low cost and flexibility of AWS EC2 without any up-front payment or long term commitment
@@ -80,9 +80,7 @@ T2 | lowest cost general purpose | web servers, small DBs
 P3 | graphics,general purpose GPU | machine learning, bit coins mining
 X1 | Memory Optimized | SAP HANA, Apache SPARK (X=Xtreme Memory Optimized)
            
-> Remember the acronym **DR MCGIFT PX**
-OR
-FIGHT DR MC PX
+> Remember the acronym FIGHT Dr McPX
 
 ## Elastic Block Storage (EBS)
 * allows you to create storage volumes and attach them to EC2 instances. Once attached you can create file systems on
