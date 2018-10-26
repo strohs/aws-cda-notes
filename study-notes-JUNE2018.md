@@ -431,13 +431,13 @@ devices and facilities. Read the [S3 FAQ](https://aws.amazon.com/s3/faqs)
 * **S3** (aka S3 Standard)
     * 99.99% availability and 99.999999999% durability
     * designed to withstand loss of 2 facilities concurrently
-    * **minimum object size 0KB**
+    * minimum object size 0KB
 * **S3-IA** (infrequently accessed)
     * for data accessed less frequently but requiring rapid access when needed
     * Lower fee than S3 but charged a retrieval fee
     * 99% Availability
     * 99.999999999% durability
-    * **minimum object size 128KB**
+    * minimum object size 128KB
 * **S3 One Zone-IA** (S3 One Zone-Infrequent Access)
     * stores data in a single AZ
         * therefore not resilient to the loss of the AZ
@@ -466,11 +466,11 @@ devices and facilities. Read the [S3 FAQ](https://aws.amazon.com/s3/faqs)
 
 ## S3 Security
 * you control access to your buckets using:
-    * Access Control Lists (ACL)
+    * **Access Control Lists (ACL)**
         * **can be applied at the object level**
         * A document that defines who can access a particular bucket or object. Each bucket and object in Amazon 
         S3 has an ACL. The document defines what each type of user can do, such as write and read permissions.
-    * Bucket Policies
+    * **Bucket Policies**
         * bucket policies **can only be applied at the bucket level**
         * A bucket policy is a resource-based AWS Identity and Access Management (IAM) policy that grants other AWS 
         accounts or IAM users access to an S3 bucket. Bucket policies supplement, and in many cases, replace 
@@ -498,6 +498,13 @@ devices and facilities. Read the [S3 FAQ](https://aws.amazon.com/s3/faqs)
 * **you can enforce server side encryption by using a Bucket Policy which denies any S3 PUT request that doesn't
 include the `x-amz-server-side-encryption` parameter** 
 
+### Cross Origin Resource Sharing (CORS) (E) 
+* way of allowing resource/code in one S3 bucket to access a resource in another S3 bucket
+    * **by default resource in one bocket cannot access resources in another bucket**
+* have to enable CORS in the **bucket that is being called** (the bucket containing the resource) and then configure
+the URL for the origin that will be calling the bucket
+
+
 ## Static Website Hosting (E) 
 * S3 can be used to host files for a **static** website
     * no PHP,asp,servlets, etc, allowed
@@ -508,108 +515,62 @@ include the `x-amz-server-side-encryption` parameter**
     * a static site that needs to be scalable and handle lots of requests
         * like a site for a major blockbuster movie release
 
-### Cross Origin Resource Sharing (CORS) (E) 
-* way of allowing resource/code in one S3 bucket to access a resource in another S3 bucket
-* have to enable CORS in the **bucket that is being called** (the bucket containing the resource) and then configure
-the URL for the origin that will be calling the bucket
-
-## S3 Versioning
-* (E) **Once versioning is enabled for a bucket, it cannot be disabled**
-* stores all versions of an object (including writes)
-* integrates with lifecycle rules
-* Multi-Factor Authentication delete capability is available for extra layer of security
-
-## Cross Region Replication (E) 
-* deleting object in source bucket **does not delete** it in replicated bucket
-* **versioning must be enabled on both source and destination buckets**
-* Regions must be unique
-* files in an **existing** bucket are not replicated automatically
-    * all subsequent uploaded files will be replicated automatically
-* you cannot replicate to multiple buckets or use daisy chaining (at this time)
-* understand what cross region replication is at a high level
-
-## Lifecycle management S3-IA and Glacier (E) 
-* can be used in conjunction with versioning
-* can be applied to current versions and previous versions
-* the following actions can now be done with lifecycle management:
-    1. Transition to Standard-IA
-        * 128KB min file size
-        * 30 days after creation
-    2. Archive to Glacier storage
-        * 30 days after being stored in Standard-IA
-    3. permanently delete objects
-
-
 ## CloudFront Overview
-AWS CloudFront is a Content Delivery Network (CDN):
-* a system of distributed servers that deliver webpages and other web content to a user based on the geographic
-locations of the user, the origin of the webpage and a content delivery server
+* AWS CloudFront is a Content Delivery Network (CDN):
+    * a system of distributed servers that deliver webpages and other web content to a user based on the geographic 
+    locations of the user, the origin of the webpage and a content delivery server
 
-* (E) *Edge Location*
+* (E) **Edge Location**
     * the location where content will be cached. This is separate to an AWS Region/AZ
-    * edge locations are not just **Read Only**, you can write to them too
-    * objects are cached for the life of the Time-To-Live (TTL)
-    * you can force a clear of the cached objects, but you will be charged
-* (E) *Origin*
+    * **edge locations are not just Read Only, you can write to them too (the objects will be put into S3)**
+    * **objects are cached for the life of the Time-To-Live (TTL)**
+    * **you can force a clear of the cached objects, but you will be charged**
+* (E) **Origin**
     * this is the origin of all files that the CDN will distribute. Cloudfront is optimized to work with:
-        * S3 bucket
-        * EC2 instance
-        * Elastic Load Balancer
-        * Route53
+        * **S3 bucket**
+        * **EC2 instance**
+        * **Elastic Load Balancer**
+        * **Route53**
     * **origin can also be a non-AWS server** (e.g. a web-server you own on-premise)
-* (E) *Distribution*
+* (E) **Distribution**
     * the name given to the CDN which consists of a collection of edge locations
         * you can have multiple origins
+* **Web Distribution** - typically used for websites, HTTP/HTTPS
+* **RTMP** - Adobe Real Time Messaging Protocol
+    * used for media streaming, i.e Adobe Flash
 
-### CloudFront Key Terminology (E) 
-* **Web Distribution** - typically used for websites
-* **RTMP** - used for media streaming
 
-### Creating a CDN (lab)  (E) 
-* know that you can configure the Default TTL (it **defaults to 24 hours**), you can change it if you have content that
-needs to expire quickly
-* you can restrict use access to content using **Signed URLs** or **Signed Cookies**
-* Geographic Restrictions
-    * you can whitelist and blacklist geographic locations (by country) so that they can/cannot view your content
-* Invalidations
-    * removes objects from the CloudFront edge caches.
-    * scenario: you need to immediately remove something from the cache and can't wait for the TTL to expire it
-
-## S3 Security and Encryption (E) 
-* all newly created buckets are private
-* You can setup access control to your buckets using:
-    * Bucket Policies
-        * applied to entire bucket
-    * Access Control Lists
-* S3 buckets can be configured to create access logs which will log all requests made to the S3 bucket
-
-### Encryption
-Types of Encryption in S3
-* *In-Transit* encryption
-    * when sending data across the wire to the bucket
-    * uses SSL/TLS (e.g. HTTPS)
-* *At Rest* encryption
-    * Server Side Encryption 
-        * **S3 Managed Keys (SSE-S3)**
-            * uses AES-256
-            * Amazon handles the keys for you
-        * **AWS Key Management Service (SSE-KMS)**
-            * similar to SSE-S3 but more costly
-            * offers more security (key envelopes)
-            * managed by Amazon and also provides an audit trail (who used keys to access what)
-        * **Customer Provided Keys (SSE-C)**
-            * you manage encryption keys
-* *Client Side Encryption*
-    * you encrypt data on your client then upload it to S3
-
-## S3 Transfer Acceleration
-* Utilizes CloudFront edge network to accelerate your uploads to S3. 
+### CloudFront and S3 Transfer Acceleration
+* **Utilizes CloudFront edge network to accelerate your uploads to S3** 
 * Instead of uploading directly to an S3 bucket, you can use a distinct URL to upload to an edge location, 
 which will in turn transfer to S3. 
 * Remember **You get a distinct URL for uploading to your bucket**
+    * **always us the S3 website URL to access bucket resources when running a website on S3** 
+        * http://mybucketname.**s3-website**.us-east-1.amazonaws.com
+
+
+### Creating a CDN (lab)  (E) 
+* know that you can configure the Default TTL (it *defaults to 24 hours*), you can change it if you have content that
+needs to expire quickly
+* you can restrict use access to content using *Signed URLs* or *Signed Cookies*
+* Geographic Restrictions
+    * you can whitelist and blacklist geographic locations (by country) so that they can/cannot view your content
+* Invalidations
+    * you manually force removal of objects from the CloudFront edge caches
+        * **you will be charged for doing this**
+    * scenario: you need to immediately remove something from the cache and can't wait for the TTL to expire it
+
+## S3 Performance Optimization
+* S3 is designed to support very high request rates
+    * if your bucket receives >100 PUT/LIST/DELETE or >300 GET requests per second, then there are some
+    best practice guidelines that will help optimize S3 performance
+    * **GET-Intensive Workloads**
+        * **you should use CloudFront to get best performance**
+            * it will Cache your most frequently accessed objects and will reduce latency for GETs
+    
 
 ## S3 Section Notes
-* S3   website URL: http://mybucketname.**s3-website**.us-east-1.amazonaws.com
+* S3 website URL: http://mybucketname.**s3-website**.us-east-1.amazonaws.com
 * direct S3 bucket: http://s3.[us-east-1].amazonaws.com/mybucketname
 * You can upload big files to S3 using multi-part upload
     * from 5MB to 5TB in size
