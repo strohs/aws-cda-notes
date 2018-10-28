@@ -111,7 +111,7 @@ component
     * ideal for workloads where data is accessed infrequently + applications where the lowest storage cost is important
 
 #### Snapshots
-* allow you to back uo your EBS volumes by taking a point in time "snapshot"
+* allow you to back up your EBS volumes by taking a point in time "snapshot"
 * snapshots are **incremental** backups
     * only blocks on the device that have changed after your most recent snapshot are saved
 * each snapshot contains all the information needed to restore your data to a new EBS volume
@@ -119,27 +119,27 @@ component
 
 
 ## Elastic Load Balancers (ELB)
-* Application Load Balancer
+* **Application Load Balancer**
     * best suited for balancing of HTTP and HTTPS traffic
     * operate at layer 7 and are application aware
     * they are intelligent and you can create advanced request routing, sending specified requests to specific web-servers
-* Network Load Balancer
+* **Network Load Balancer**
     * are best suited for load balancing of TCP traffic where extreme performance is required
     * operate at connection layer (Layer 4)
     * Capable of handling millions of requests per second while maintaining ultra-low latencies
     * will cost the most out of the ELBs
     * **use these for extreme performance**
-* Classic load Balancer
-    * are the *legacy* load balancers
-    * can balance HTTP/HTTPS applications and use Layer-7 specific features such as *X-Forwarded* and sticky sessions
+* **Classic load Balancer**
+    * the *legacy* load balancer (could be on the exam)
+    * can balance HTTP/HTTPS applications and use Layer-7 specific features such as `X-Forwarded*` and sticky sessions
         * note that it is not as intelligent as the application load balancer
-    * you can also use strict layer 4 load balancing for applications that rely purely on the TCP protocol
+    * you can also use *strict layer 4* load balancing for applications that rely purely on the TCP protocol
 
 ### Load Balancer Errors
 * classic load balancer
     * if your application stops responding, the classic load balancer responds with a **504 error (Gateway Timeout)**
     * this means that the application is having issues (not the LB) and the problem could be at the 
-    DB Layer or Web Server layer
+    DB Layer or Web/Application Server layer
     * identify where the application is failing and **scale it up** not out where possible
 
 ### X-Forwarded-For Header (supported by Classic Load Balancer)
@@ -155,14 +155,14 @@ component
 RDS 101 (Relational Database Service)
 =====================================
 * RDB types offered by AWS (these all support multi-AZ)
-    * SQL Server
-    * ORACLE
-    * MySQL
-    * PostgreSQL
-    * Amazon Aurora
+    * **SQL Server**
+    * **ORACLE**
+    * **MySQL**
+    * **PostgreSQL**
+    * **Amazon Aurora**
         * Amazon's Flagship RDB
         * fully compatible with MySQL
-    * Maria DB
+    * **Maria DB**
 * RDS is most commonly used for OLTP (online transaction processing)
     * OLTP - very simple transaction storage and retrieval that happens very frequently
 * Data Warehousing
@@ -172,7 +172,7 @@ RDS 101 (Relational Database Service)
         * Online Transaction Processing differs from Online Analytics Processing in terms of the types of
         queries you will run
         * OLAP - ex: net profit for EMEA and Pacific for for a certain product, and want to know stuff like
-        unit cost of radio in each region
+        unit cost of the product in each region, sales figures per month/day/week
             * pulls in large # of records
             * much more complex type of processing is done
     * data warehousing databases will use different type of architecture both from a database perspective and infra-
@@ -218,7 +218,7 @@ Encryption at rest is supported for:
 * Aurora
 
 * Encryption is done using the the AWS Key Management Store (KMS) service
-* once your RDS instance is encrypted, the data stores at rest in the underlying storage is encrypted **as are its
+* once your RDS instance is encrypted, the data stored at rest in the underlying storage is encrypted **as are its
 automated backups, read replicas, and snapshots**
 * at present, **encrypting an existing DB instance is not supported**
     * to use encryption on an existing DB, you must:
@@ -261,7 +261,7 @@ performance of web applications by allowing you to retrieve information from fas
 of relying entirely on slower disk-based databases.
 * cached information may include the results of I/O intensive queries or the results of computationally intensive
 calculations
-* supports memcached and redis caching engines
+* **ElasticCache supports memcached and redis caching engines**
     
 ### memcached
 * a widely adopted memory object caching system
@@ -287,9 +287,9 @@ redundancy
 * memcached
     * designed as a pure caching solution with **no persistence**
     * elasticache manages memcached nodes as a pool that can grow and shrink, similar to an EC2 autoscaling group
-    * individual nodes are expendable, and elasticache provides additional capabilities here:
-        * automatic node replacement
-        * auto-discovery
+    * **individual nodes are expendable, and elasticache provides additional capabilities here**:
+        * **automatic node replacement**
+        * **auto-discovery**
     * **if you are NOT concerned about multi-AZ redundancy, use memcached**
     * **Is object caching your primary goal? Use memcached**
     * **Are you interested in as simple a caching model as possbile? memcached**
