@@ -479,13 +479,13 @@ devices and facilities. Read the [S3 FAQ](https://aws.amazon.com/s3/faqs)
 
 ### S3 Encryption
 #### types of encryption
-* **In Transit**:
+* **In Transit**
     * using SSL/TLS
 * **At Rest**:
     * **Server-Side encryption**
-            * using Amazon S3 Managed Keys - **SSE-S3** (uses AES256)
-            * using AWS Key Management Service - **S3-KMS**
-            * using customer provided keys - **SSE-C**
+        * using Amazon S3 Managed Keys - **SSE-S3** (uses AES256)
+        * using AWS Key Management Service - **S3-KMS**
+        * using customer provided keys - **SSE-C**
     * **Client Side encryption**
         * data is encrypted by owner before storing on S3
 
@@ -657,7 +657,7 @@ When you use [versioning](https://docs.aws.amazon.com/lambda/latest/dg/versionin
 you can publish one or more versions of your Lambda function. As a result you can work with different 
 variations of your Lambda in your development workflow, such as dev, beta, prod etc..
 
-* each Lamda function *version* has a unique ARN
+* each Lambda function *version* has a unique ARN
 * after you publish a version, it is immutable, you cannot edit the new (published) version
 * your latest function code will be in the `$LATEST` version.
 * when you update your function code, Lambda replaces the code in the `$LATEST` version of the Lambda function
