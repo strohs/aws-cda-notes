@@ -622,16 +622,6 @@ systems, patching, scaling etc.
     * this configuration is called the *event source mapping*. It enables the automatic invocation of your lambda
     function when events occur
 
-## Lambda Exam Tips
-* Lambda scales out (not up) automatically
-* Lambda functions are independent, 1 event = 1 function
-* Lambda is serverless
-* Lambda functions can trigger other lambda functions
-    * 1 event can = X functions (if functions trigger other functions)
-* Architectures can get extremely complicated
-    * AWS X-Ray allows you to debug what is happening
-* Lambda can do things globally, you can use it to back up S3 buckets to other S3 buckets etc..
-* know the lambda triggers (see the Supported event sources section below)
 
 ## Supported Event Sources (aka Triggers)
 * For poll-based sources, the **lambda function maintains the event source mapping**
@@ -661,6 +651,56 @@ systems, patching, scaling etc.
 | CloudFront | Async | uses Lambda@Edge to change cloudfront requests and responses |
 | On Demand | Sync or Async | you invoke the lambda (from cli using `invoke` or programmatically)
 
+
+## Versioning with Lambda
+When you use [versioning](https://docs.aws.amazon.com/lambda/latest/dg/versioning-intro.html) in AWS Lambda 
+you can publish one or more versions of your Lambda function. As a result you can work with different 
+variations of your Lambda in your development workflow, such as dev, beta, prod etc..
+
+* each Lamda function *version* has a unique ARN
+* after you publish a version, it is immutable, you cannot edit the new (published) version
+* your latest function code will be in the `$LATEST` version.
+* when you update your function code, Lambda replaces the code in the `$LATEST` version of the Lambda function
+
+#### Qualified/Unqualified ARNs
+* You can refer to the LATEST function version using its ARN
+    * there are two ARNs associated with this initial version:
+        * **Qualified ARN**
+            * the function ARN *WITH* the version suffix
+                * ex:  `arn:aws:lambda:aws-region:acct-id:function:helloworld:$LATEST`
+        * **Unqualified ARN**
+            * the function ARN *WITHOUT* the version suffix
+                * ex: `arn:aws:lambda:aws-region:acct-id:function:helloworld`
+
+#### ALias(es)
+* an **alias** is just a name that points to a particular version of your function
+* For example:
+    1. After initially creating a Lambda function (the $LATEST version), you can publish a version 1 of it. 
+    If you were to create an alias named "PROD" that points to version 1, you can now use the "PROD" alias to invoke 
+    version 1 of the Lambda function.
+    2. Now, you can update the code (the $LATEST version) with all of your improvements and then publish another stable 
+    and improved version (version 2). You can promote version 2 to production be remapping the PROD alias so that it
+    points to version 2. If you find something wrong, you can easily roll back the production version to version 1
+    by remapping the PROD alias so that it points to version 1
+
+## Lambda Exam Tips
+* Lambda scales out (not up) automatically
+* Lambda functions are independent, 1 event = 1 function
+* Lambda is serverless
+* Lambda functions can trigger other lambda functions
+    * 1 event can = X functions (if functions trigger other functions)
+* Architectures can get extremely complicated
+    * AWS X-Ray allows you to debug what is happening
+* Lambda can do things globally, you can use it to back up S3 buckets to other S3 buckets etc..
+* know the lambda triggers (see the Supported event sources section below)
+* Versioning Tips
+    * can have multiple versions of lambda functions
+    * latest version will use `$LATEST`
+    * qualified version ARN will have "$LATEST" in it, unqualified will not have it
+    * versions are immutable (cannot be changed)
+    * **can split traffic using aliases to different versions**
+        * **cannot split traffic using $latest, instead create an alias to $latest**
+     
 
 ## Limits
 * Memory
