@@ -584,33 +584,85 @@ needs to expire quickly
         * Each label must start and end with a lowercase letter or a number
     * bucket names CANNOT be ip addresses (ie. 192.123.45.11)
 
+
+
 Lambda
-========================
+============================================================================================================
+AWS Lambda is a compute service where you can upload your code and create a Lambda function. AWS Lambda takes
+care of provisioning and managing the servers that you use to run code. You don't have to worry about operating
+systems, patching, scaling etc.
+
+
+* You can use Lambda in the following ways:
+    * as an event-driven compute service where Lambda runs your code in response to events
+        * events could be changes to data in S3 buckets or a DynamoDB table
+    * as a compute service to run your code in response to HTTP requests using API Gateway or API calls made
+    using AWS SDKs
+    
+* Lambdas can run code using the following runtimes
+    * **Node.js**
+    * **Java**
+    * **Python**
+    * **C#**
+    * **Go**
+    * support for PowerShell recently added
+
+## Lambda Pricing
+* Number of requests
+    * first 1 million requests are free (per month)
+    * $0.20 per 1 million requests thereafter
+* Duration
+    * duration is calculated from the time your code begins executing until it returns or otherwise terminates
+    rounded up the nearest *100ms*
+    * the price depends on the amount of memory you allocate to your function
+        * you are charged $0.00001667 for every GB-second used
+
 * Lambda functions and event sources are the core components of AWS Lambda
 * Event sources (are usually) the AWS services that can be configured to invoke a lambda function
     * this configuration is called the *event source mapping*. It enables the automatic invocation of your lambda
     function when events occur
 
-### Event Source Mappings
-* Push based event sources
-    * event mappings are maintained within the event source
-    * you grant the event source permission to invoke your lambda function using a resource based policy
-* Poll based event sources (kinesis, dynamodb, sqs)
-    * lambda function *polls* the event source and *pulls* data to the function when an event becomes available
-    * event source mapping maintained with the lambda function
-    * lambda needs your permission to poll the stream source:
-        * You grant the permission via the *execution role*, using the permissions policy associated with a role 
-        that you specify when you create your lambda function.
-        * AWS Lambda does *not* need any permissions to invoke your lambda function
-* Custom Applications
-    * you write these applications and invoke the lambda yourself 
-        * you use the `Invoke` api (via an AWS SDK or using the aws cli `invoke` command)
-    * you don't need to set-up an event source mapping
-    * if the application and lambda function are owned by different accounts, the account the owns the lambda function
-    must allow cross-account permissions in the permission policy associated with the lambda function
+## Lambda Exam Tips
+* Lambda scales out (not up) automatically
+* Lambda functions are independent, 1 event = 1 function
+* Lambda is serverless
+* Lambda functions can trigger other lambda functions
+    * 1 event can = X functions (if functions trigger other functions)
+* Architectures can get extremely complicated
+    * AWS X-Ray allows you to debug what is happening
+* Lambda can do things globally, you can use it to back up S3 buckets to other S3 buckets etc..
+* know the lambda triggers (see the Supported event sources section below)
+
+## Supported Event Sources (aka Triggers)
+* For poll-based sources, the **lambda function maintains the event source mapping**
+* For all others, the event source mapping is maintained by the source
 
 
-### Limits
+| Event Source | (A)Synchronous | Notes |
+|:------------:|:--------------:|:------|
+| DynamoDB | Sync | **polled by lambda**,streams must be enabled |
+| Kinesis Data Streams | Sync | **polled by lambda** once per second |
+| Simple Queue Service | Sync | **polled by lambda**, time affected by `VisibilityTimeout` and `TimeToWait` |
+| Cognito | Sync  |
+| Amazon Alexa | Sync  | build lambdas to give new skills to Alexa |
+| Amazon Lex | Sync | uses lambda to perform init., validation, fulfillment
+| API Gateway | Sync |
+| Kinesis Data Firehose | Sync | lambda can process a stream before it is sent downstream
+| Simple Notification Service | Async | |
+| S3 | Async | 
+| Simple Email Service | Async | SES message in SNS event |
+| CloudFormation | Async | CloudFormation message in SNS Event
+| CloudWatch Logs | Async |
+| CloudWatch Events | Async | can create rules to send events to lambda |
+| CodeCommit | Async | repository events can trigger lambda |
+| Scheduled Events | Async | powered by CloudWatch Events |
+| AWS Config | Async |
+| AWS IoT Button | Async | relies on Lambda to perform the button click operation(s)
+| CloudFront | Async | uses Lambda@Edge to change cloudfront requests and responses |
+| On Demand | Sync or Async | you invoke the lambda (from cli using `invoke` or programmatically)
+
+
+## Limits
 * Memory
     * **128MB** min to **3008MB** max (in 64MB increments)
 * ephemeral disk space in /tmp **512MB**
@@ -623,8 +675,7 @@ Lambda
 * Environment variables size (total) **4KB**
 * Total size of **all** deployment packages per region **75GB**
 
-
-#### Concurrency Limits
+### Concurrency Limits
 * Account Level limits per Region:
     * **1000** concurrent executions by default
     * can be increased by opening a case in AWS Support Center
@@ -642,38 +693,6 @@ Lambda
     * By setting a concurrency limit on a function, Lambda guarantees that allocation will be applied 
     specifically to that function, regardless of the amount of traffic processing remaining functions
     * once concurrency limit is reached for a function, the function is throttled
-
-
-### Supported Event Sources
-* For poll-based sources, the **lambda function maintains the event source mapping**
-* For all others, the event source mapping is maintained by the source
-
-
-| Event Source | (A)Synchronous | Notes |
-|:------------:|:--------------:|:------|
-| Amazon DynamoDB | Sync | **polled by lambda**,streams must be enabled |
-| Amazon Kinesis Data Streams | Sync | **polled by lambda** once per second |
-| Amazon Simple Queue Service | Sync | **polled by lambda**, time affected by `VisibilityTimeout` and `TimeToWait` |
-| Amazon Simple Notification Service | Async | |
-| Amazon S3 | Async | 
-| Amazon Simple Email Service | Async | SES message in SNS event |
-| AWS CloudFormation | Async | CloudFormation message in SNS Event
-| Amazon CloudWatch Logs | Async |
-| Amazon CloudWatch Events | Async | can create rules to send events to lambda |
-| AWS CodeCommit | Async | repository events can trigger lambda |
-| Scheduled Events | Async | powered by CloudWatch Events |
-| AWS Config | Async |
-| AWS IoT Button | Async | relies on Lambda to perform the button click operation(s)
-| Amazon CloudFront | Async | uses Lambda@Edge to change cloudfront requests and responses |
-| Amazon Cognito | Sync  |
-| Amazon Alexa | Sync  | build lambdas to give new skills to Alexa |
-| Amazon Lex | Sync | uses lambda to perform init., validation, fulfillment
-| Amazon API Gateway | Sync |
-| Amazon Kinesis Data Firehose | Sync | lambda can process a stream before it is sent downstream
-| On Demand | Sync or Async | you invoke the lambda (from cli using `invoke` or programmatically)
-
-
-* AWS Lambda provides the `CreateEventSourceMapping` operation for you to create and manage the event source mapping. 
 
 
 ## Scaling Behaviour
@@ -705,7 +724,7 @@ rate at which your lambda is invoked
 ### Throttling behavior
 * Non-stream based event sources
     * Synchronous invocations:
-        * function returns **429** error and the invoking service is responsible for retries
+        * function returns **429** error and the **invoking service is responsible for retries**
         * the `ThrottleReason` error code explains if there was a function level throttle or account level throttle
         * each service may have its own retry policy
     * Asynchronous invocation:
@@ -723,90 +742,77 @@ rate at which your lambda is invoked
     it is automatically deleted from the queue) or until the `MessageRetentionPeriod` set for the queue expires
 
 
+API Gateway
+=====================================================================================================
+Amazon API Gateway is a fully managed service that makes it easy for developers to publish, maintain, monitor
+and secure APIs at any scale. With a few clicks in the AWS Management Console, you can create an API that acts
+as a "front door" for applications to access data, business logic, or functionality from your back-end
+services, such as applications running on EC2, code running on AWS Lambda, or any web application
 
-### Monitoring concurrency usage
-uses cloudwatch metrics
-* ConcurrentExecutions - concurrent executions at the account level, and for any function with a custom concurrency limit
-* UnreservedConcurrentExecutions - shows total concurrent executions for functions assigned to the default 
-"unreserved" concurrency pool 
+## What can API Gateway Do?
+* expose HTTPS endpoints to define a RESTful API
+* "serverlessly" connect to services like Lambda & DynamoDB 
+    * and HTTP endpoints running on EC2 or somewhere else on the internet
+* Send each API endpoint to a different target
+    * one to lambda, one to dynamodb, etc...
+* run efficiently with low cost
+* scales effortlessly
+* track and control usage using an API Key
+* throttle requests to prevent attacks
+* connect to CloudWatch to log all requests for monitoring
+* maintain multiple versions of your API
+
+## How do you configure API Gateway?
+* Define an API
+* Define resources and nested resources (URL Paths)
+* For each resource:
+    * select supported HTTP methods (verbs... GET POST DELETE PUT OPTIONS etc...)
+    * set security (if needed)
+    * choose target (such as EC2, Lambda, DynamoDB, etc..)
+    * Set request and response transformations
+* Deploy API to a *Stage*
+    * uses API Gateway domain, by default
+    * you can have a "prod" stage, "dev" stage, "test" stage, "v1" etc...
+    * you can use a custom domain
+    * supports AWS Certificate Manager (free SSL/TLS certs!)
+
+## What is API Caching?
+You can enable **API Caching** in API Gateway to cache your endpoint's response. With caching, you can reduce
+the number of calls made to your endpoint and also improve the latency of requests to your API. When you enable
+caching for a stage, API Gateway caches responses from your endpoint for a specified (TTL) period, in seconds.
+API Gateway then responds to the request by looking up the endpoint response from the cache instead of making
+a request to your endpoint.    
     
+## Same Origin Policy
+In computing, the **same-origin policy** is an important concept in the web application security model. Under
+the policy, a web browser permits **scripts** contained in a first web page to access data in a second web page,
+but only if both web pages have the same origin.
 
-     
-### Handlers (in Java)
-* two approaches for creating a handler
-    * load handler method directly without implementing an interface
-    * implement a standard interface provided by `aws-lambda-core-library`
-* general syntax for handler is `OutputType handler-name(InputType input, Context context) {...}`
-    * in order for handler to be invoked, input data must be serializable into the data type of the input parameter
-    * InputType - can be event data published by an event source or custom input that a developer provides
-    such as String or a custom object(must be serializable)
-    * outputType - 
-        * if you plan to invoke the lambda synchronously (using `RequestResponse` invocation type) 
-        you can return the output of your function using any of the supported data types
-        * if you plan to invoke asynchronously (using the `Event` invocation type), the output type should
-        be `void`
-            * Example: S3 and SNS use the `Event` invocation type
-* inputType and outputType can be:
-    * Simple Java types (AWS Lambda supports the String, Integer, Boolean, Map, and List types) 
-    * Pre-defined AWS event types defined in `aws-lambda-java-events`
-    * POJO (Plain Old Java Object) type
-        * AWS will automatically serialize and deserialize input and output JSON based on the POJO type
-        * AWS Lambda serializes based on standard bean naming conventions (see The Java EE 6 Tutorial). 
-        You should use mutable POJOs with public getters and setters
-        * If you use POJOs for input and output, you need to provide implementation of the `RequestClass` and 
-        `ResponseClass` types
-    * Stream type (If you do not want to use POJOs or if Lambda's serialization approach does not meet your needs,
-     you can use the byte stream implementation
-* you can omit the `Context` parameter if it isn't needed
+This is done to prevent *Cross-Site Scripting (XSS)* attacks
+* enforced by web browsers
+* ignored by tools such as Postman and Curl
 
+## (E) Cross-Origin Resource Sharing (CORS)
+**Cross-Origin Resource Sharing (CORS)** is one way the server at the other end (not the client code in the
+browser) can relax the same-origin policy. CORS is a mechanism that allows restricted resources (e.g. fonts)
+on a web page to be requested from another domain outside the domain from which the first resource was served.
 
+1. Browser makes an HTTP OPTIONS call for a URL
+2. Server returns a response that says:
+    * "These other domains are approved to GET this URL"
 
-### AWS Lambda CLI 
-common command examples:
-* creating a lambda `aws lambda create-function`
+* If you ever get this Error - "Origin policy cannot be read at the remote resource?"
+    * you need to enable CORS on API Gateway
 
-        aws lambda create-function \
-        --region <region> \
-        --function-name CreateThumbnail \
-        --zip-file fileb://file-path/CreateThumbnail.zip \
-        --role <role-arn> \
-        --handler CreateThumbnail.handler \
-        --runtime <runtime> \
-        --timeout 10 \
-        --memory-size 1024
-
-* updating existing lambda config
-
-        aws lambda update-function-configuration \
-           --function-name CreateThumbnail  \
-           --region <region> \
-           --timeout <timeout-in-seconds>
-
-* adding permissions to a lambda's access policy
-
-        aws lambda add-permission \
-        --function-name CreateThumbnail \
-        --region region \
-        --statement-id some-unique-id \
-        --action "lambda:InvokeFunction" \
-        --principal s3.amazonaws.com \
-        --source-arn arn:aws:s3:::sourcebucket \
-        --source-account bucket-owner-account-id
- 
-
-* manually invoking a lambda
-
-        aws lambda invoke \
-        --invocation-type Event \
-        --function-name CreateThumbnail \
-        --region region \
-        --payload file://file-path/inputfile.txt \
-        --profile adminuser \
-        outputfile.txt
-
-
-
-
+## Exam tips
+* remember what API Gateway is at a high level
+* API Gateway has caching capabilities to increase performance
+* API Gateway is low cost and scales automatically
+* you can throttle API gateway to prevent attacks
+* you can log results to CloudWatch
+* If you are using Javascript/AJAX that uses multiple domains with API Gateway, ensure that you have enabled
+CORS on API Gateway
+* CORS is *enforced* by the client (usually a browser)
 
 CloudFormation
 =====================================================================================================
