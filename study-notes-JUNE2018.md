@@ -255,12 +255,20 @@ failover to the standby so that DB operations can resume quickly without adminis
     * MariaDB
     * Aurora
 
-## Elasticache
-a Web service that makes it easy to deploy, operate and scale an in-memory cache in the cloud. It improves the
-performance of web applications by allowing you to retrieve information from fast, managed, in-memory caches, instead
-of relying entirely on slower disk-based databases.
+
+Elasticache
+====================================================================================================================
+* a Web service that makes it easy to deploy, operate and scale an in-memory cache in the cloud
+* It improves the performance of web applications by allowing you to retrieve information from fast, managed, 
+in-memory caches, instead of relying entirely on slower disk-based databases
 * cached information may include the results of I/O intensive queries or the results of computationally intensive
 calculations
+* helps to take load off of your Database
+* can be used in front of a RDS or DynamoDB 
+* good for **read-heavy** databases where data is not changing too frequently
+    * e.g. social networking, gaming media sharing, Q&A portals
+* good for compute heavy workloads
+    * e.g. recommendation engines
 * **ElasticCache supports memcached and redis caching engines**
     
 ### memcached
@@ -287,7 +295,7 @@ redundancy
 * memcached
     * designed as a pure caching solution with **no persistence**
     * elasticache manages memcached nodes as a pool that can grow and shrink, similar to an EC2 autoscaling group
-    * **individual nodes are expendable, and elasticache provides additional capabilities here**:
+    * **individual nodes are expendable, and elasticache provides additional capabilities here**
         * **automatic node replacement**
         * **auto-discovery**
     * **if you are NOT concerned about multi-AZ redundancy, use memcached**
@@ -297,6 +305,45 @@ redundancy
     multiple cores? memcached**
     * **Do you want the ability to scale your cache horizontally (scale-out) as you grow? memcached**
 
+### Caching Strategies
+* 2 Strategies Available **Lazy Loading** and **Write-Through**
+    
+#### Lazy Loading
+* loads data into the cache only when necessary
+* if requested data is in the cache, Elasticache returns the data to the application
+* if the data is not in the cache or has expired, Elasticache returns a `null`
+* your application then fetches the data from the database and writes the data received into the cache so that
+it is available next time
+* Advantages:
+    * only requested data is cached
+        * avoids filling up cached with useless data
+    * Node failures are not fatal
+        * a new empty node will just have a lot of cache misses initially
+* Disadvantages
+    * cache miss penalty:
+        * initial request (to elasticache)
+        * then a query to database
+        * then writing of data to the cache
+    * Stale Data
+        * if data is only updated when there is a cache miss, it can become stale
+        * Doesn't automatically update if the data in the DB changes
+* TTL (Time to Live)
+    * specifies the number of seconds until the key data expires to avoid keeping stale data in the cache
+    * lazy loading treats an expired key as a cache miss and causes the application to retrieve the data from the
+    database and subsequently write the data into the cache with a new TTL
+    * does not eliminate stale data, but helps to avoid it
+
+#### Write Through (to the cache)
+* **Write Through** adds or updates data to the cache whenever data is written to the database
+* Advantages
+    * data in the cache is never stale
+    * users are generally more tolerant of additional latency when updating data rather than retrieving it
+* Disadvantages
+    * write penalty
+        * every write involves a write to the cache and the database
+    * if a node fails and a new one is spun up, data is missing until added or updated in the database
+        * mitigate this by implementing Lazy Loading in conjunction with write-through
+    * wasted resources if most of the data is never read
 
 ## EC2 Section Exam Tips
 * know differences between On Demand, Spot, Reserved, Dedicated Hosts
@@ -380,6 +427,23 @@ charged for the complete hour
     * **Redshift** is a good choice if the reason your database is feeling stress is because management is running OLAP
     transactions on it
     * KNOW the different USE CASES BETWEEN MEMCACHED and REDIS (see above)
+    * elasticache sits between your application and database
+    * 2 different caching strategies
+        * Lazy Loading
+        * Write Through
+    * lazy loading only caches data when it is requested
+        * elasticache node failures are not fatal, just lots of cache misses initially (with lazy loading)
+        * lazy loading cache miss penalty:
+            1. initial request (cache is missing data)
+            2. query database (to get data)
+            3. write data to cache
+        * avoid stale data by implementing a TTL
+    * write through strategy writes data into the cache whenever there is a change to the database
+        * data is never stale
+        * there is a write penalty
+            * each write to DB involves a write to the cache
+            * elasticache node failure means that data is missing until added or updated in the database
+            * wasted resources if most of the data is never used
 
 
 S3
@@ -815,7 +879,7 @@ for optimization
 the request and response, but also about calls that your application makes to downstream AWS resources,
 micro services, databases and web APIs
 * in short, x-ray is a way to analyze your serverless application and find out where performance bottlenecks are and
-can also help tp debug your serverless application
+can also help to debug your serverless application
 
 ## X-Ray Architecture
 * you use the *X-Ray SDK* within your application to send trace data (as JSON) to the X-Ray Daemon
@@ -852,6 +916,8 @@ X-Ray integrates with the following AWS services:
 ## X-Ray Exam Tips
 * understand what x-ray is (and does)
 * know the bolded items above
+
+
 
 API Gateway
 =====================================================================================================
@@ -961,6 +1027,470 @@ CORS on API Gateway
 * API Gateway can be throttled
     * default limits are 10,000 RPS or 5000 concurrent requests
         * the limits can be increased upon request to the AWS Support Center
+
+
+
+Dynamo DB
+=====================================================================================================================
+A fast and flexible NoSQL database service for all applications that need consistent, single-digit millisecond latency
+ at any scale. It is a fully managed DB and supports both document and key-value data models. Its flexible data
+ model and reliable performance make it a great fit for mobile, gaming, web etc...
+
+## DynamoDB 101
+* stored on SSDs
+* spread across three geographically distinct data centres
+* choice of 2 consistency models
+    * **Eventually Consistent Reads** (default) 
+        * best read response
+        * The response might include some stale data
+        * consistency across all copies of data is usually reached within a second
+        * repeating a read after a short time should return the updated data
+    * **Strongly Consistent Reads**
+        * slower read performance
+        * the result returned by dynamoDB will have the most up-to-date data
+            * the result will have all writes that received a successful response prior to the read
+* (E) you can export a DynamoDB table (or selected items) to a .CSV file
+* can update your DynamoDB table capacity on the fly
+    * *push button capacity scaling*
+* DynamoDB supports nested attributes up to 32 levels deep.
+* supports key-value and document data structures
+* documents can be written in JSON, HTML or XML
+* authentication and access control to DynamoDB is managed via AWS IAM
+    * you can create an IAM role that enables you to obtain temp. access credentials to DynamoDB
+    * **you can also use a special *IAM Condition* to restrict user access to only their own records**
+
+## DynamoDB Data Model
+* Tables
+    * a collection of Items
+* Items
+    * a collection of Attributes
+    * like a row of data in a RDB
+    * aggregate size of an item, including all the attribute names and attribute values, **cannot exceed 400KB**
+* Attributes
+    * like columns of data in a RDB
+            
+
+## DynamoDB Key Types
+* Primary Keys (two types)
+    * Single Attribute key
+        * consists of a unique ID
+        * **Partition Key** (most common key type)
+            * a hash key composed of **one attribute**
+            * DynamoDB uses the partition keys value as input to a hash function. The output of the hash function
+            determines the partition on which data is to be stored
+            * **no two items in a table can have the same partition key value!**
+    * Composite Primary key
+        * composed of two attributes:
+            * **Partition Key + Sort Key**
+                * a hash and a range 
+                * uses the partition key to determine the partition location
+                    * two items can have the same partition key; however, **they must have a different sort key**
+                * **all items with same partition key are stored together, in sorted order, by sort key value**
+
+## IAM Conditions Example
+* Imagine a gaming app where users should only be able to access their own data from DynamoDB
+* this can be done by adding a **Condition** to an IAM Policy to allow access only to items where the **Partition 
+key value matches their userId**
+* example IAM Policy using a condition statement:
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AllowAccessToOnlyItemsMatchingUserID",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:BatchGetItem",
+                "dynamodb:Query",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchWriteItem"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:us-west-2:123456789012:table/GameScores"
+            ],
+            "Condition": {
+                "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [        <-- indicates the Partition key must match the userId below
+                        "${www.amazon.com:user_id}"  <-- a substitution variable that will contain the userId
+                    ],
+                    "dynamodb:Attributes": [ <-- limits the users access to the specified attributes
+                        "UserId",
+                        "GameTitle",
+                        "Wins",
+                        "Losses",
+                        "TopScore",
+                        "TopScoreDateTime"
+                    ]
+                },
+                "StringEqualsIfExists": {
+                    "dynamodb:Select": "SPECIFIC_ATTRIBUTES" <--ensures that the calling app must always provide a
+                }                                            <-- list of specific attributes. It will not allow ALL
+            }                                                <-- attributes
+        }
+    ]
+}
+```
+
+## DynamoDB Indexes
+Many applications might benefit from having one or more **secondary** (or alternate) keys available to allow efficient 
+access to data with attributes other than the primary key. To address this, you can create one or more secondary 
+indexes on a table. Dynamo Supports two types:
+* (E) **Local Secondary Index** (LSI)
+    * has the **same partition key as the table but different sort key**
+    * can **only be created when creating a table**
+    * cannot be removed or modified after table creation
+    * can create a maximum of 5 local secondary indexes per table
+    * All scalar data types (Number, String, Binary) can be used for the sort key element of the local secondary 
+    index key
+    * support Strongly Consistent Reads and Eventually Consistent Reads
+    * LSIs limit the total size of all elements (tables and indexes) to **10 GB per partition key value**
+* (E) **Global Secondary Index** (GSI)
+    * an index with a partition or a partition-and-sort key that can be **different** from those already on the table
+    * can be created at table creation time or added later
+    * can create a maximum of 5 global secondary indexes per table
+    * GSIs do not enforce data co-location, or a maximum partition size (unlike LSIs)
+    * GSIs have their own provisioned throughput (you must configure this)
+    * GSIs only support eventually consistent reads
+
+
+## DynamoDB Streams
+* captures any kind of modification of the DynamoDB tables
+    * if a new item is added to the table, the stream captures an image of the entire item, including all its attributes
+    * if an item is updated, the stream captures the *before* and *after* image of any attributes that were modified
+    in the item
+    * if any item is deleted from the table, the stream captures an image of the entire item before it was deleted
+* data is stored in DynamoDB streams for **24 hours**
+    * you can process the data during this time using e.g. Lambda
+
+
+## DynamoDB Query vs Scan
+### Queries
+* (E) a query operation finds items in a table using only primary key attribute values. 
+    * **You must provide a partition attribute name and distinct value to search for** 
+        * i.e. using equals... primaryKey = <SOME_VALUE>
+    * you can optionally provide a sort key attribute name and value and use a comparison operator to refine 
+    search results i.e. <,>,<=,>,=,BETWEEN, begins_with()
+* (E) By default, a query returns all of the data attributes for items with the specified primary keys; however, you can
+use `ProjectionExpression` parameter so that the query only returns some of the attributes rather than all of them
+* (E) Query results are always sorted by the sort key
+    * If the data type of the sort key is a number, the results are returned in numeric order; otherwise, the 
+    results are returned in order of the ASCII character code values
+    * By default the sort order is ascending, **to reverse the order of a Query, set the `ScanIndexForward` 
+    parameter to false**
+* **by default, queries are always eventually consistent** but can be changed to strongly consistent
+    * in java we use: `.withConsistentRead(true)`
+
+### Scans
+* (E) **a scan operation examines every item in the table** and returns all of the data attributes for every item
+    * However, you can use the `ProjectionExpression` parameter so that the scan only returns some of the 
+    attributes, rather than all of them
+* you can filter the results of Scan, after the Scan has run i.e.(note that your whole table is still scanned)
+
+### What to use? Query vs Scan?
+* Generally a query is more efficient than a Scan
+* A Scan always scans the entire table then filters out values to provide the desired result, eventually adding the
+extra step of removing data from the result set
+    * Avoiding using scan operation on a large table with a filter that removes many results, if possible
+    * Also, as a table grows, the scan slows. The scan operation examines every item for the requested values and 
+    can use up the provisioned throughput for a large table in a single operation
+
+#### How to Improve Performance
+* you can reduce the impact of a query or scan by setting a smaller page size which uses fewer read operations
+    * e.g. set the page size for a request (the *Limit* parameter) to return 40 items
+        * this will limit the number of items scanned and returns immediately when the limit is reached
+    * you will end up with a larger number of smaller operations that will allow other requests to succeed without 
+    throttling
+* avoid using Scans if you can
+    * design your tables in a way that can use the ```Query```,```Get```, or ```BatchGetItem``` APIs
+* By default, a Scan operation processes data sequentially and returns **1MB** increments before moving on to
+retrieve the next 1MB of data.
+    * **it can only Scan one partition at a time**
+* you can configure DynamoDB to use Parallel scans instead by logically dividing a table or index into **segments** and
+scanning each segment in parallel
+    * best to avoid parallel scans if your table or index is already incurring heavy read/write activity from other
+    applications
+
+
+
+## DynamoDB Provisioned Throughput
+### Read and Write Capacity Units
+* DynamoDB Provisioned Throughput is measured in Capacity Units
+* when you create your table, you specify your requirements in terms of:
+    * Read Capacity Units  (RCU)
+        * **1 RCU = 1 x Strongly Consistent Read of 4KB per second**
+        *   OR
+        * **2 x Eventually Consistent reads of 4KB per second (default)**
+    * Write Capacity Units (WCU)
+        * **1 x WCU = 1 x 1KB write per second**
+
+#### example configuration
+* table with 5 x RCUs and 5 x WCUs will be able to perform:
+    * 5 x 4KB Strongly Consistent Reads = 20KB per second
+    * twice as many eventually consistent reads = 40KB
+    * 5 x 1KB Writes = 5KB per second
+* if your application reads or writes larger items it will consume more capacity units and will cost you more as well
+    
+#### Strongly Consistent Reads Calculation
+* your app needs to read 80 DynamoDb items per second
+* each item is 3KB in size
+* you need Strongly Consistent Reads
+    1. calculate how many RCUs needed for each read
+        * Size of each item / 4KB (rounded up to nearest whole number)
+            * 3KB / 4KB = 0.75 = 1 RCU per operation
+    2. multiply by the number of reads per second
+         * 1 RCU x 80 reads per second = 80 RCUs required
+
+#### Eventually Consistent Reads Calculation
+* do the same calculation as Strongly consistent, but divide the result by 2 since Eventually consistent reads
+double the throughput of Strongly Consistent Reads
+* using the same example as above, but   80 / 2 = 40 RCUs required
+
+#### Write Capacity Units Calculation
+* you want to write 100 items per second
+* each item is 512 bytes in size
+    1. calculate how many WCU for each write
+        * size of item / 1KB (rounded up to nearest whole number)
+            * 512 bytes / 1 KB = 0.5 = 1 WCU per write operation
+    2. multiply by the number of writes per second
+        * 1 WCU * 100 items per seconds = 100 WCUs
+        
+
+
+### DynamoDB Provisioned Throughput Calculations
+* Unit of Read provisioned throughput
+    * all reads are rounded up to increments of 4KB
+    * Eventually Consistent Reads (default) consist of **2 reads per second**
+    * Strongly Consistent Reads consist of **1 read per second**
+* Unit of Write provisioned throughput
+    * All writes are 1KB in size
+    * All writes consist of 1 write per second
+            
+### The Magic Formula
+#### Read units
+* (E) **(Size of Read rounded to nearest 4KB chunk / 4KB) * num of items = read throughput**
+    * **Divide by 2 if eventually consistent**
+
+* Example 1 - You have an application that requires to read 10 items (a row in DynamoDB) of 1KB per second using 
+eventual consistency. What should you set the read throughput to?
+* Solution 1:
+    * First calculate how many read units *per item* we need
+        * 1KB rounded to the nearest 4KB increment = 4
+        * 4KB / 4KB = *1 read unit per item*
+    * 1 * 10 read items = 10
+    * using eventual consistency we get 10/2 = 5
+    * *5 units of read throughput*
+
+* Example 2 - You have an application that requires to read 10 items of 6KB per second using eventual consistency.
+What should you set the read throughput to?
+* Solution 2:
+    * First calculate how many read units per item we need
+        * 6KB rounded up to nearest increment of 4KB is 8KB
+        * 8KB / 4KB = 2 read units per item
+    * 2 * 10 read items = 20
+    * using eventual consistency we get 20 / 2 = 10
+    * *10 units of read throughput* 
+    
+* Example 3 - You have an application that requires to read 5 items of 10KB per second using eventual consistency.
+What should you set the read throughput to?
+* Solution 3:
+    * First calculate how many read units per item we need
+        * 10KB rounded up to nearest increment of 4KB is 12KB
+        * 12KB / 4KB = 3 read units per item
+    * 3 * 5 read items = 15
+    * using eventual consistency we get 15 / 2 = 7.5
+    * *8 units of read throughput*
+
+* Example 4 - You have an application that requires to read 5 items of 10KB per second using strong consistency. What
+should you set the read throughput to?
+* Solution 4:
+    * First calculate how many read units per item we need
+        * 10KB rounded up to nearest 4KB increment is 12KB
+        * 12KB / 4KB = 3 read units per item
+    * 3 * 5 read items = 15
+    * using **strong consistency** we get *15 units of read throughput*
+
+#### Write Units
+* Example 1 - You have an application that requires to write 5 items, with each item being 10KB in size per second.
+What should you set the write throughput to?
+    * **Each write unit consists of 1KB of data.** You need to write 5 items per second with each item using 10KB of data.
+    * 5 * 10KB = 50 write units
+    * *write throughput of 50 units*
+    
+* Example 2 - You have an application that requires to write 12 items of 100KB per item each second. What should you 
+set the write throughput to?
+    * Each write unit consists of 1KB of data.
+    * You need to write 12 items per second with each item using 100KB of data
+    * 12 * 100KB = 1200 write units
+    * write throughput of 1200 units
+
+* What happens if you exceed your write or read throughput?
+    * (E) 400 HTTP Status Code - **ProvisionedThroughputExceededException**
+    * You exceeded your maximum allowed provisioned throughput for a table or for one or more global secondary indexes
+
+
+## DynamoDB Accelarator (DAX)
+* **DAX** is a fully managed, clustered in-memory cache for DynamoDB
+* it is optimized to work specifically with dynamodb
+* delivers up to a 10x read performance improvement
+* microsecond performance for millions of requests per second
+* ideal for read-heavy and bursty workloads
+    * e.g. auction applications, gaming, retail sites during black Friday promotions
+
+### How Does DAX Work?
+* **DAX is a write-through caching service**
+    * data is written to the cache as well as the back-end store at the same time
+* allows you to point your DynamoDB API calls at the DAX cluster
+* if the item you are querying is in the cache (cache hit), DAX returns it to your application
+* if the item is not available (cache miss) then DAX performs an **Eventually Consistent** GetItem operation against
+DynamoDB
+* retrieval of data from DAX reduces the read load on DynamoDB tables
+    * you *may* be able to reduce Provisioned Read Capacity
+
+#### What is DAX not suitable for?
+* DAX uses Eventually Consistent Reads only, so not suitable for apps that require Strongly Consistent Reads
+* not for write intensive applications
+* applications that don't perform many read operations
+* applications that do not require microsecond response times
+
+
+
+## DynamoDB Exam Tips
+* DynamoDb is a low latency NoSQL database
+* consists of Tables, Items, and Attributes
+* supports both document and key-value data models
+* supported document formats are JSON, HTML, XML
+* 2 types of Primary Key
+    * Partition Key
+    * Partition Key + Sort Key  (aka composite key)
+* 2 consistency models:
+    * Strongly Consistent
+        * can take up to 1 second for new writes to be reflected in your read
+    * Eventually Consistent (default)
+* Access is controlled using IAM policies
+    * fine grained access control is achieved by using the IAM Condition parameter:
+        * `dynamodb:LeadingKeys` - allows users to access only the items where the partition key value matches their
+        user ID
+* DynamoDB Indexes
+    * indexes enable fast queries on specific data columns
+    * give you a different view of your data, based on alternative Partition / Sort Keys
+    * important to understand the differences between GSIs and LSIs
+        * Local Secondary Indexes:
+            * must be created when you create the table
+            * same partition key as your table
+            * different sort key
+            * can provide Strongly Consistent Reads or Eventually Consistent
+        * Global Secondary Index
+            * can create at any time (table creation or after table creation)
+            * different partition key
+            * different sort key
+            * can only provide eventually consistent reads
+* Scans and Queries
+    * a query finds items in a table using only the Primary Key
+        * you provide the primary key name and a distinct value to search for
+    * a Scan operation examines every item in the table
+        * by default it returns all data attributes
+            * use a `ProjectionExpression` parameter to indicate which attributes to return
+            * can also use a `FilterExpression` to perform comparisons on the results
+    * query results are always sorted by the sort key (if there is one)
+    * sorted in ascending order
+        * set `ScanIndexForward` to `false` to reverse the order (**queries only**)
+    * query operation is generally more efficient than a scan
+    * reduce the impact of a query or scan by setting a smaller page size which uses fewer read operations
+    * Isolate scan operations to specific tables and segregate them from your mission critical traffic
+    * try parallel scans rather than the default sequential scan
+    * avoid using scans if you can...
+        * design your tables in a way that you can use the Query,Get, or BatchGetItem APIs
+* 1 x Write Capacity Unit = 1 x 1KB write per second
+* 1 x Read Capacity Unit = 1 x 4KB strongly consistent read OR 2 x 4KB eventually consistent read
+* KNOW HOW to CALCULATE WRITE/READ CAPACITY REQUIREMENTS
+* DAX
+    * provides in-memory caching for DynamoDB tables
+    * improves response times for **Eventually Consistent Reads** only
+    * you point your API calls to the DAX cluster, instead of your table
+    * if the item you are querying is on the cache, DAX will return it; otherwise it will perform an Eventually
+    Consistent GetItem operation to your DynamoDB table
+    * not suitable for write-intensive applications or applications that require Strongly Consistent reads
+    
+ 
+
+## Using Web Identity Providers with DynamoDB
+* You can authenticate users using Web Identity providers
+    * Facebook, Google, Amazon, or any other Open-ID connect compatible identity provider
+    * this is done using ```AssumeRoleWithIdentity``` API
+    * you will need to create a Role first
+* (E) For the exam you need to know the basic steps taken to authenticate
+    1. User authenticates with ID provider (eg. Facebook)
+    2. They are passed a token by their ID provider
+    3. Your code calls ```AssumeRoleWithIdentity``` API and provides the providers token and specifies the ARN for the
+    IAM role
+    4. App can now access DynamoDB from between 15 minutes to 1 hour (default is 1 hour)
+
+## DynamoDB APIs
+* CreateTable - create a new table and its indices
+* UpdateTable - update provisioned throughput values
+* DeleteTable - 
+* DescribeTable - return table size, status and index information
+* ListTables - return a list of all tables associated with the current account and endpoint
+* PutItem - creates a new item, or replaces an old item with a new item
+* (E) BatchWriteItem - inserts, replaces or deletes multiple items across multiple tables in a single request
+    * supports batches up to 25 items to Put or Delete, **max total request size 16MB**
+* UpdateItem - edit an existing items attributes. can use conditional operators
+* DeleteItem - delete a single item by primary key. can use conditional operators
+* GetItem - returns a set of attributes for an item that matches the primary key
+* (E) BatchGetItem - returns attributes for multiple items across multiple tables using their primary key
+    * size limit of **16MB** and returns a maximum of 100 items
+* Query - gets one or more items using a primary key, or from a secondary index using the index key
+    * can use comparison operators and expressions to narrow the scope of the query
+    * a single response has a size limit of **1MB**
+* Scan - gets all items and attributes by performing a full scan across the table or secondary index
+    * response has a **1MB** size limit
+
+## DynamoDB Data Types
+* Scalar Data Types:
+    * Number, String, Binary, Boolean
+    * NULL
+* Collection Data Types
+    * Number Set
+    * String Set
+    * Binary Set
+    * heterogeneous list
+    * heterogeneous map
+    
+
+## Other important aspects of DynamoDB
+* (E) Conditional Writes
+    * update an item if some conditional statement is true
+        * if item = $10 then update it to $12
+    * conditional writes are idempotent
+        * you can send the same conditional writes request multiple times, but it will have no further effect on the
+        item after the first time DynamoDB performs the specified update
+* (E) AtomicCounters
+    * you use ```UpdateItem``` operation to increment or decrement the value of an existing attribute without interfering
+    with other write requests
+        * **all write requests are applied in the order in which they are received**
+    * eg. a website visitor counter that you want to increment regardless of its current value
+    * AtomicCounters are **NOT** idempotent
+        * Each call to ```UpdateItem``` will perform the update
+            * if you suspect an update failed, then each call to UpdateItem could potentially update the item again
+        * NOT suitable for banking applications, safer to use Conditional update
+* (E) Scenario Question
+    * exam might ask if you should be using Conditional Writes or AtomicCounters
+    * **ask yourself is it critical that the data has to be correct, or can you have margin of error**
+* (E) Batch Operations
+    * if your application needs to read multiple items, you can use ```BatchGetItem``` API. 
+    * A single ```BatchGetItem``` request can retrieve up to 16MB of data, which can contain as many as 100 items. 
+    * In addition, a single ```BatchGetItem``` request can retrieve items from multiple tables
+* There are no throughput limits, BUT If you wish to exceed throughput rates of 10,000 writes/second or 
+10,000 reads/second, you must first contact Amazon through this online form
+* When defining primary keys, try to use a many to few principle
+    * you want a partition key that has a large number of distinct values and that are requested fairly uniformly, as
+    randomly as possible
+* initial limit of 256 tables per region, can be upped by contacting Amazon support
+
+
 
 
 CloudFormation
