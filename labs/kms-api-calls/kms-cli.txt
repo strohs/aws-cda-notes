@@ -1,0 +1,8 @@
+# encrypt a file
+aws kms encrypt --key-id CMK-ID-HERE --plaintext fileb://secret.txt --output text --query CiphertextBlob | base64 --decode > encryptedsecret.txt
+# decrypt a file
+aws kms decrypt --ciphertext-blob fileb://encryptedsecret.txt --output text --query Plaintext | base64 --decode > decryptedsecret.txt
+# re-encrypt the already encrypted file
+aws kms re-encrypt --destination-key-id CMK-ID-HERE --ciphertext-blob fileb://encryptedsecret.txt | base64 > newencryption.txt
+# enable key rotation (key is rotated every year)
+aws kms enable-key-rotation --key-id CMK-ID-HERE

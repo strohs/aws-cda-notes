@@ -1493,6 +1493,341 @@ DynamoDB
 * initial limit of 256 tables per region, can be upped by contacting Amazon support
 
 
+KMS and Encryption on AWS
+=====================================================================================================
+* AWS Key Management Service is a managed service that makes it easy for you to create and control the encryption
+keys used to encrypt your data
+* KMS is integrated with other AWS services:
+    * EBS
+    * S3
+    * Redshift
+    * Amazon Elastic Transcoder
+    * Amazon Workmail
+    * Amazon RDS
+    * plus others
+* KMS makes it simple to encrypt your data with encryption keys that you manage
+* **encryption keys are regional**
+* when you set-up a key you will need to specify two types of permissions to either a user or group:
+    * *Key Administrative Permissions*
+        * this is the user/role that can administer key through the KMS API
+        * NOTE: they can't use the key
+    * *Key Usage Permissions*
+        * IAM users/role that can use the key to encrypt and decrypt data
+
+## KMS Envelope Encryption
+* Envelope encryption is the practice of encrypting plaintext data with a data key and then encrypting the data key
+under another key
+* envelope encryption in a nutshell:
+    1. Customer Master Key encrypts the Data Key (aka Envelope key)
+    2. Envelope Key is used to encrypt your data
+* decryption with an envelope key:
+    * master key (CMK) + encryption algorithm is used to decrypt the envelope (data) key into a plaintext key
+    * the plaintext key is used to decrypt your data
+    
+
+## KMS Exam Tips
+* **The Customer Master Key (CMK)** consists of:
+    * alias
+    * creation date
+    * description
+    * key state (enabled or disabled)
+    * **key material**
+        * customer provided
+        * AWS provided
+    * CMKs stored in AWS **can never be exported out of KMS unencrypted**
+    * CMKs are used to encrypt/decrypt up to 4KB of data
+* **Data Keys**
+    * data keys are encryption keys that you use to encrypt data, including:
+        * large amounts of data
+        * other data encryption keys
+* Setting up a Customer Master Key:
+    * create alias and description
+    * choose a **key material option**:
+        * **KMS**
+            * kms generates the key material    
+        * **External**
+            * your own key material
+    * Define Key **Administrative Permissions**
+        * IAM users/roles that can administer (but not use) the key through the KMS API
+    * Define Key **Usage Permissions**
+        * IAM users/roles that can use the key to encrypt and decrypt data
+* KMS CLI
+    * the CLI operations mentioned below use a CMK to encrypt/decrypt up to 4KB of arbitrary data
+    * know how to use the following KMS API calls and what they do:
+        * `aws kms encrypt` --key-id CMK-ID --plaintext fileb://secret.txt --output text --query CiphertextBlob | base64 --decode > encryptedsecret.txt
+            * Encrypts plaintext into ciphertext by using a customer master key (CMK)
+            * You can use the Encrypt operation to move encrypted data from one AWS region to another
+        * `aws kms decrypt` --ciphertext-blob fileb://encryptedsecret.txt --output text --query Plaintext | base64 --decode > decryptedsecret.txt
+            * Decrypts ciphertext
+                * Ciphertext is plaintext that has been previously encrypted
+        * `aws kms re-encrypt` --destination-key-id NEW-CMK-ID --ciphertext-blob fileb://encryptedsecret.txt | base64 > newencryption.txt
+            * Encrypts data on the server side with a new customer master key (CMK) without exposing the plaintext 
+            of the data on the client side
+            * **The data is first decrypted and then re-encrypted**
+            * You can also use this operation to change the encryption context of a ciphertext
+        * `aws kms enable-key-rotation` --key-id KEY-ID
+            * Enables automatic rotation of the key material for the specified customer master key (CMK)
+                * AWS KMS generates new cryptographic material for the CMK every year
+            * You cannot perform this operation on a CMK in a different AWS account
+* Envelope Encryption
+    * know that the *customer master key* does the following:
+        * **used to decrypt the data key (aka envelope key)**
+        * **envelope key is then used to decrypt the data**
+
+
+Simple Queue Service (SQS)
+==================================================================================================================
+* SQS is a message queue that stores "messages" while waiting for a computer to process them
+* SQS is a distributed queue that enables applications to quickly and reliably queue messages that one component in
+the application generates to be consumed by another component
+* SQL enables you to **decouple** the components of an application so they run independently, easing message
+management between components
+* any component of a distributed application can store messages in the queue
+* **messages can contain up to 256KB of text**
+    * **a message can include only XML, JSON, and unformatted text**
+    * To send messages larger than 256 KB, you can use the Amazon SQS Extended Client Library for Java. 
+* any component can later retrieve the messages programmatically using the SQS API
+* The queue acts as a buffer between the component producing and saving data, and the component receiving the data
+for processing. This means the queue resolves issues that arise if the producer is producing work faster than 
+the consumer can process it, or if the producer or consumer are only intermittently connected to the network
+
+* fyi: SQS is the oldest AWS Service
+* need to understand what SQS is at a very high level
+
+## Queue Types
+### Standard Queues
+* the default queue type
+* **unlimited throughput**
+    * nearly unlimited number of transactions per second per API action
+* **guaranteed At-least-once delivery** 
+    * a message is delivered at least once, but **occasionally more than once copy of a message is delivered**
+* **Best-Effort-Ordering**
+    * occasionally messages might be delivered in an order different from which they were sent
+* If your system requires that order be preserved, you can place sequencing information in each message, so that
+you can reorder the messages when the queue returns them. Or see if you can use a FIFO queue
+
+### FIFO Queues
+Used when the **order** of operations and events is critical. FIFO queues not available in all regions
+* High Throughput
+    * support **300 transactions per second** (300 send,receive,or delete operations per second)
+    * when you **batch 10 messages per operation**, FIFO queues can support up to **3,000 messages per second**
+* **Exactly Once Message Processing**
+    * a message is delivered once and remains available until a consumer processes and deletes it. Duplicates are
+    not introduced into the queue
+* **First-in-First-out delivery**
+    * **the order in which messages are sent and received is strictly preserved**
+* cannot convert existing standard queues into FIFO queues
+
+### Dead Letter Queues
+* a special type of queue that holds messages that can't be processed successfully
+* useful for debugging because they enable you to isolate problematic messages to determine why they failed
+
+## SQS Key Facts
+* SQS is *pull-based* NOT push-based
+* Messages are 256KB in size
+* **Messages can be kept in the queue from 1 minute to 14 days**
+    * default retention period is **4 days**
+* SQS Standard queues guarantees your messages will be delivered **at least once**
+    * you will need to plan for this when architecting a solution using SQS Standard Queues 
+
+### SQS Visibility Timeout
+* the amount of time that the message is invisible in the SQS queue after a reader picks up that message
+* If a job (message) is processed before the visibility timeout expires, the message will then be deleted from
+the queue
+* If the job is not processed within that time, the message will become visible again and another consumer can
+process it
+    * this could result in the same message being delivered twice
+* **default visibility timeout is 30 seconds**
+    * increase it if your task takes > 30 seconds
+* **maximum is 12 hours**
+
+### SQS Long Polling
+* a way to retrieve messages from your Amazon SQS queues
+    * long polling doesn't return a response to your calling application until a message arrives in the queue
+        * OR the long poll times out
+* long polling can save you money, since you are not rapidly polling the queue for a message
+
+## SQS Exam Tips
+* SQS is a distributed message queueing system
+* allows you to decouple the components of an application so that they are independent
+* poll-based, not push
+* Standard Queues (default)
+    * best-effort ordering
+    * messages delivered at least once
+* FIFO Queues
+    * ordering is strictly preserved
+    * messages are delivered once, no duplicates
+        * good for banking transactions which need to happen in strict order
+* Visibility Timeout
+    * default is 30 seconds
+        * increase it if your task takes > 30 secs
+        * max vis. timeout is 12 hours
+* Short Polling (default)
+    * a request to SQS using short polling returns immediately even if no messages are in the queue
+* Long Polling
+    * a request using long polling polls the queue periodically and only returns a response when a message is in
+    the queue or the timeout is reached
+
+
+
+Simple Notification Service (SNS)
+=================================================================================
+* SNS is a web-service that makes it easy to set up, operate, and send notifications from the cloud.
+* It provides developers with a highly scalable, flexible, and cost-effective capability to publish messages from an
+application and immediately deliver them to subscribers or other applications
+* SNS follows the *publish-subscribe* messaging paradigm, with notifications being delivered to clients using a *push*
+mechanism that eliminates the need to periodically check of *poll* for new information and updates
+* With simple APIs requiring minimal up-front development effort, no maintenance or management overhead and 
+pay-as-you-go pricing, Amazon SNS gives developers an easy mechanism to incorporate a powerful notification system
+with their application
+* Besides pushing cloud notifications directly to mobile devices, Amazon SNS can also deliver notifications by SMS text
+message or email, to SQS queues, or to any HTTP endpoint.
+* SNS notifications can also trigger Lambda functions:
+    * when a message is published to an SNS topic that has a Lambda function subscribed to it, the Lambda
+    is invoked with the payload of the published message
+    * the lambda receives the payload as an input parameter and can manipulate the information in the message,
+    publish the message to another SNS topic, or send the message to other AWS services
+* To prevent messages from being lost, all messages published to SNS are stored redundantly across multiple AZs
+* Pricing
+    * users pay $0.50 per 1 million SNS requests
+    * $0.06 per 100,000 notification deliveries over HTTP
+    * $0.75 per 100 notification deliveries over SMS
+    * $2.00 per 100,000 notification deliveries over Email
+
+## Topics
+* SNS allows you to group multiple recipients using topics. A topic is an *access point* for allowing recipients to
+dynamically subscribe for identical copies of the same notification
+* One topic can support deliveries to multiple endpoint types
+    * eg. you can group together iOS, Android and SMS recipients. When you publish once to a topic, SNS delivers
+    appropriately formatted copies of your message to each subscriber
+* Topic for Email Subscriptions
+    * (E) users must confirm via email reply that they want to be subscribed to the topic
+    * (E) the subscription request will expire after 3 days
+    * (E) the email subscription request can be sent as JSON (or as a regular text Email)
+
+## SNS Benefits
+* Instantaneous, push-based delivery (no polling)
+* Simple APIs and easy integration with applications
+* Flexible message delivery over multiple transport protocols
+* Inexpensive, pay-as-you-go model, with no up front costs
+* Web based AWS Management Console offers the simplicity of a point-and-click interface
+
+## SNS vs SQS
+(E)
+* Both messaging services in AWS
+* SNS - push
+* SQS - Polls (pulls)
+
+* (E) Should you use SQS or SNS?
+    * Do you need to *push* messages out to users/apps/etc..? Use SNS
+    * Do you need to *pull* or *poll* messages? use SQS
+* (E) SNS message type for email push is JSON
+
+## Format of structured notification messages
+The notification message sent over **HTTP,HTTPS,Email-JSON and SQS** will consist of a simple JSON object, which includes
+the following information:
+* MessageId: a UUID
+* Timestamp
+* TopicArn: topic to which this message was published
+* Type: the type of the delivery message (eg. 'Notification')
+* UnsubscribeURL: a link to unsubscribe the end-point from this topic
+* Message: the payload (body) of the message
+* Subject: the subject field (if one was provided)
+* Signature - base64 encoded signature of the message
+* SignatureVersion - version of the Amazon SNS signature used
+
+**Email** transport messages only contain the message body
+
+## Mobile Push High Level Steps
+Amazon SNS can send mobile push messages directly to an app on a mobile device. SNS can also send messages to mobile
+endpoints subscribed to a topic.
+1. Request credentials from Mobile platforms (APNS, GCM, etc...)
+2. Request token from mobile platforms
+3. Create platform application object
+4. Create platform endpoint object
+5. publish message to mobile endpoint 
+
+## SNS Exam Tips
+* SNS is a scalable and highly available notification service which allows you to send push notifications from the cloud
+    * variety of message formats supported:
+        * SMS text messages
+        * email
+        * SQS
+        * any HTTP endpoint
+* uses a Pub-Sub model whereby users subscribe to topics
+* it is a push mechanism rather than pull
+* SNS consists of a topic and each topic can have multiple subscriptions
+    * max topic name length is 256 characters
+    
+* once a message is successfully published to a topic, it cannot be recalled
+* Be default, SNS offers **10 million** subscriptions per topic, and **100,000** topics per account
+* With the exception of SMS messages, Amazon SNS messages can contain up to **256KB** of text data, including XML, 
+JSON and unformatted text
+* SNS subscriptions support multiple delivery protocols
+    * Email
+    * Email as JSON
+    * HTTP
+    * HTTPS
+    * Amazon SQS 
+        * standard queues only
+    * Application (i.e. mobile app. push notifications)
+        * Amazon Device Messaging
+        * Apple Push Notification Service
+        * Google Cloud Messaging (GCM)
+        * Windows Push Notification Service
+        * Microsoft Push Notification Service
+        * Baidu Cloud Push (for Android devices in China)
+    * AWS Lambda
+    * SMS
+* Messages can be customized for each protocol above
+* messages could be delivered out of order
+* AWS does **NOT** guarantee delivery of messages to subscribed end-points (due to potential internet issues, or 
+email restrictions)
+    * SNS implements a 4-phase retry policy
+        1. retries with no delays in between attempts
+        2. retries with some minimum delay in between attempts
+        3. retries with some back-off model (linear or exponential)
+        4. retries with some maximum delay between attempts
+
+
+Simple Email Service (SES) vs SNS
+==================================================================================================================
+* SES is a scalable and highly available email service designed to help marketing teams and application developers
+send marketing, notification, and transactional emails to their customers using a pay as you go model
+* can also be used to receive emails
+    * incoming emails can automatically be delivered to an S3 bucket
+    * incoming emails can be used to trigger Lambdas and SNS notifications
+* Basically SES is email only
+    * automated emails
+    * purchase confirmations, shipping notifications, order status updates....
+        * e.g. a mobile phone company that needs to send automated confirmation emails every time a customer
+        purchases pre-paid mobile phone minutes
+    * marketing communications, advertisements, special offers...
+        * e.g. an online retail business that needs to let customers know about special offers
+
+
+| SES | SNS |
+|:---:|:---:|
+| Email messaging service  | pub/sub messaging services (formats include: SMS,HTTP,SQS,email) |
+| Can trigger Lambdas or SNS notification  | can trigger Lambda function |
+| Can be used for incoming or outgoing email  | Can fan out messages to large number of recipients  |
+| An email address is all that is required to start sending messages to a user | Consumers must subscribe to a topic to receive the notifications |
+
+
+## Exam tips
+* SES is email only
+    * can be used for incoming and outgoing email
+    * it is NOT subscription based, you only need to know the email address
+* SNS supports multiple formats (SMS,SQS,HTTP,email)
+    * push notifications only
+    * pub/sub model
+        * consumers must subscribe to a topic
+    * you can fan-out messages to a large number of recipients:
+        * multiple clients each with their own SQS queue
+
+
+
+
 
 
 CloudFormation

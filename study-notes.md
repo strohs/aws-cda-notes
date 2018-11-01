@@ -1,4 +1,4 @@
-AWS Certified Developer Associate (notes for the original exam) 
+AWS Certified Developer Associate (notes for the original exam pre june 2018) 
 ==============================================================
 
 ## AWS 10,000ft overview
