@@ -306,7 +306,9 @@ redundancy
     * **Do you want the ability to scale your cache horizontally (scale-out) as you grow? memcached**
 
 ### Caching Strategies
-* 2 Strategies Available **Lazy Loading** and **Write-Through**
+* 2 Strategies available when using elasticache (applies to both Redis and Memcached) 
+    * **Lazy Loading**
+    * **Write-Through**
     
 #### Lazy Loading
 * loads data into the cache only when necessary
