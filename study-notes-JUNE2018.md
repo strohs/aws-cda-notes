@@ -1756,9 +1756,11 @@ endpoints subscribed to a topic.
         * any HTTP endpoint
 * uses a Pub-Sub model whereby users subscribe to topics
 * it is a push mechanism rather than pull
+* SNS can push messages into (multiple) SQS queues
+    * this is called *fan-out*
+
 * SNS consists of a topic and each topic can have multiple subscriptions
-    * max topic name length is 256 characters
-    
+    * max topic name length is 256 characters    
 * once a message is successfully published to a topic, it cannot be recalled
 * Be default, SNS offers **10 million** subscriptions per topic, and **100,000** topics per account
 * With the exception of SMS messages, Amazon SNS messages can contain up to **256KB** of text data, including XML, 
@@ -1827,11 +1829,278 @@ send marketing, notification, and transactional emails to their customers using 
 
 
 
+Kinesis
+===============================================================================================================
+* what is streaming data?
+    * data that is generated continuously by thousands of data sources, which typically send in their data records
+    simultaneously, and in small sizes (think kilobytes)
+        * eg. purchases from online stores
+        * stock prices
+        * game data (as the gamer plays)
+        * social network data
+        * geospatial data (think uber.com)
+        * IoT sensor data
+* What is Kinesis?
+    * a platform on AWS to send your streaming data to
+    * Kinesis makes it easy to load an analyze streaming data and also provides the ability for you to build your
+    own custom application for your business needs
+* What are the core Kinesis services?
+    * kinesis streams
+        * **kinesis data streams**
+            * default 24 hour retention of data
+            * can be increased to 7 days
+        * **kinesis video streams**
+    * **kinesis firehouse**
+        * Amazon Kinesis Data Firehose is a fully managed service for delivering **real-time streaming data**
+    * **kinesis analytics** 
+
+## Kinesis Streams
+### Kinesis Data Streams
+* You can use Amazon Kinesis Data Streams to collect and process large streams of data records in real time
+    * a common use is the real-time aggregation of data followed by loading the aggregate data into a 
+    data warehouse or map-reduce cluster
+* A Kinesis data stream is a set of *shards*
+* data producers (mobile phones, laptops, web servers...) send data to kinesis streams and the data gets put into
+one or more shards
+* data consumers (usually EC2 instances) can then read data from the shards and process it
+* processed data can be stored in a variety of AWS resources
+    * DynamoDB, S3, EMR, Redshift, etc....
+
+#### Shards
+* A shard is a uniquely identified sequence of data records in a stream
+* a shard gives you *5 transactions per second* for reads, up to a *max read rate of 2MB per second*
+* up to *1,000 records per second for writes*, up to a *max total data write rate of 1MB per second* (including
+partition keys)
+* the data capacity of your stream is a function of the number of shards that you specify for the stream
+* the total capacity of the stream is the sum of the capacity of its shards
+
+### Kinesis Video Streams
+* securely stream video from connected devices to AWS for analytics and machine learning
+
+## Kinesis Firehouse
+* data producers (mobile phones, web servers, laptops....) send data to kinesis firehose
+* you don't worry about setting up streams and configuring shards because kinesis firehose is *more* automated
+* data can optionally be analyzed by lambda functions before storing it
+* data is then finally stored
+    * usually in S3
+    * can also store in *Elasticsearch cluster*, Redshift, Splunk
+* kinesis firehose does not retain data (within kinesis streams)
+
+
+## Kinesis Analytics
+* With Amazon Kinesis Data Analytics, you can process and analyze streaming data using standard SQL
+* The service enables you to quickly author and run powerful SQL code against streaming sources to perform time 
+series analytics, feed real-time dashboards, and create real-time metrics
+    * streaming sources are Kinesis Streams or Kinesis Firehose
+* the results of your SQL are sent to a kinesis data stream and then onto S3, or Redshift table, or ElasticSearch
+
+## Exam Tips
+* KNOW the DIFFERENCE between kinesis streams and kinesis firehouse (you will be given scenario questions)
+    * kinesis streams
+        * you must manually provision stream sizes and shard counts at creation time  
+        * partitions data into shards
+        * can retain the data in a shard for 24 hours up to 7 days
+        * you write a application to consume the stream (using a SDK)
+            * typically the consumer app will run on EC2
+    * kinesis firehouse
+        * automatically scales to meet demand (no configuration of stream size/shard counts)
+        * can optionally use Lambdas to process/transform data streams before storing the data
+        * no data retention
+* kinesis analytics
+    * lets you process streaming data (from kinesis streams or kinesis firehose) using SQL
+    * results of the SQL are sent to kinesis stream and then onto S3, or Redshift, or Elasticsearch 
+
+
+
+Elastic Beanstalk
+=======================================================================================
+* With Elastic Beanstalk you can deploy, monitor and scale an application quickly
+* It provides developers or end users with the ability to provision application infrastructure in an almost
+transparent way
+* Elastic Beanstalk enables developers to just "upload their code" and have Elastic Beanstalk provision the underlying
+resources underneath
+* It has a highly abstract focus towards infrastructure, focusing on components and performance, not configuration and
+specifications
+* It attempts to remove or significantly simplify infrastructure management, allowing applications to be deployed into
+infrastructure environments easily
+* AWS invented this so developers that didn't have much AWS experience would start deploying their applications to AWS
+
+## Beanstalk key architecture components
+* Applications are the high level structure in beanstalk
+* Either you entire application is one EB application OR
+    * each logical component of your application can be a EB application OR
+     * a EB environment within an application
+* Applications can have multiple environments (Prod, Staging, Dev, V1,V2,etc) or functional type (front-end, back-end)
+* Environments are either single instances or scalable
+* Environments are either web server environments or worker environments
+
+* application versions are unique packages which represent versions of your apps.
+* each application can have many versions (1:M relationship)
+* application versions can be deployed to environments within an application
+
+## Available Platforms on Elastic Beanstalk
+* Preconfigured
+    * PHP
+    * Java
+    * Tomcat
+    * Node.js
+    * Ruby
+    * .NET
+    * Python
+    * Go
+    * Packer
+* Preconfigured - Docker
+    * Glassfish
+    * Go
+    * Python
+* Generic
+    * Docker
+    * Docker multi-container
+    
+## Using Elastic Beanstalk with a Database
+* Two options
+    * have EB create and provision a RDS DB for you
+        * you can then configure it to delete the DB upon application termination, 
+        * or configure it to take a snapshot of your DB and store it on S3 upon application termination 
+    * use an existing RDS database
+        * you create this yourself and then configure EB to use it
+
+## Updating Elastic Beanstalk
+* You can do application updates as well as configuration updates
+* Elastic Beanstalk supports several options for Deployment policies:
+    * All at once
+        * deploys new version to all instances simultaneously
+        * all instances are out of services while the deployment takes place
+        * you will experience an outage while the deployment is taking place
+            * not ideal for mission critical production systems
+        * if the update fails, you need to roll-back the changes by re-deploying the original version to all your
+        instances
+    * Rolling
+        * deploys the new version in batches
+        * each batch of instances is taken out of service while the deployment takes place
+        * you environment capacity will be reduced by the number of instances in a batch while the deployment 
+        takes place
+        * not ideal for performance sensitive systems
+        * if the update fails, you need to perform an additional rolling update to roll back the changes
+    * Rolling with additional batch
+        * launches an additional batch of (the old) instances
+        * deploys the new version in batches
+        * maintains full capacity during the deployment process
+        * if the update fails, you need to perform an additional rolling update to roll back the changes
+    * Immutable
+        * deploys the new version to a fresh group of instances in their own autoscaling group
+        * when the new instances pass their health checks...
+            * they are moved to your existing auto scaling group
+            * finally the old instance are terminated
+        * maintains full capacity during the deployment process
+        * the impact of a failed update is far less, and the rollback process requires only terminating
+        the new autoscaling group
+        * preferred option for mission critical production systems
+
+## Advanced Elastic Beanstalk
+* you can customize your elastic beanstalk environment using Elastic Beanstalk configuration files
+    * e.g. you can define packages to install, create linux users, run shell commands, config. your load balancer
+* these are files written on YAML or JSON format
+    * they can have a filename of your choice but **must have a .config extension**
+    * they must be saved inside a folder called **.ebextensions**
+        * the .ebextensions folder must be included in the top-level directory of your application source bundle
+    * these config files can be placed inside source control along with the rest of your app. source code
+
+#### example healthcheck .config
+* configures an Elastic Load Balancer to make a HTTP request to `/health` om the ec2 instances it is fronting
+```json
+{
+ "option_settings" :
+    [
+      {
+        "namespace" : "aws:elasticbeanstalk:application",
+        "option_name" : "Application Healthcheck URL",
+        "value" : "/health"
+      }
+    ]
+}
+```
+
+## Elastic Beanstalk (EB) with RDS
+* elastic beanstalk supports two ways of integrating an RDS database with your Beanstalk environment
+* you can launch the RDS instance from within the EB console
+    * which means the RDS instance is created within your EB environment
+        * a good option for Dev and Test deployments
+    * this may not be ideal for production environments
+        * the lifecycle of your database is tied to the lifecycle of your application environment
+        * if you terminate the environment, the DB will be terminated too
+    * For production environments, the preferred option is to decouple the RDS instance from your EB environment:
+        * i.e. launch it outside of EB, directly from the RDS section of the console
+        * this option gives you a lot more flexibility
+            * allows you to connect multiple environments to the same DB
+            * provides a wider choice of DB types
+            * allows you to tear down your application environment without affecting the DB instance
+            
+* to allow the ec2 instances in your EB environment to connect to an outside DB, there are 2 additional steps:
+    * an additional security group must be added to your environment's Auto Scaling Group
+    * you'll need to provide connection string configuration information to your application servers
+        * endpoint, password, connection string  using EB environment properties
+
+
+## Exam tips
+* deploys and scales your web applications including the web application server platform where required
+* supports widely used programming technologies:
+    * Java
+    * PHP
+    * Python
+    * Ruby
+    * Go
+    * Docker
+    * .NET
+    * Node.js
+* and application server platforms:
+    * Tomcat
+    * Passenger
+    * Puma
+    * IIS
+* provisions the underlying resources for you
+* can fully manage EC2 instance for you OR you can take full administrative control
+* updates, monitoring, metrics and health checks all included    
+* Your applications can be split into tiers (Web Tier, Application Tier, Database Tier)
+* You can do application updates as well as configuration updates
+    * Deployment policies
+        * All at once, Rolling, Rolling with additional batch, and Immutable
+* You pay for the AWS resources EB configures for you (EB itself is free) 
+* KNOW HOW CODE UPDATES WORK IN ELASTIC BEANSTALK
+    * all at once
+        * service interruption while you update the entire environment at once
+        * to roll bck, you need to perform a additional all at once upgrade
+    * rolling
+        * reduced capacity during deployment
+        * to roll back, perform a further rolling update
+    * rolling with additional batch
+        * maintains full capacity
+        * to roll back, perform a further rolling update
+    * immutable
+        * preferred for mission critical production systems
+        * maintains full capacity
+        * to roll back, just delete the new instances and auto-scaling group
+* you can customize/configure your application environment by adding configuration files
+    * they are written in YAML or JSON
+    * they have a .config extension
+    * the .config files are saved to the .ebextension folder
+        * this folder must be at the top level dir of your app. source code bundle
+* two different options for launching your RDS instance:
+    * launch within EB
+        * when you terminate the EB environment, the DB is also terminated
+        * quick and easy to add your DB and get started
+        * suitable for Dev and Test environments only
+    * launch outside of EB
+        * additional config steps required
+            * Security Group and DB connection information
+            * suitable for prod environments, more flexible
+            * allows connections from multiple EB environments
+                * you can tear down the app stack without impacting the DB
 
 
 
 CloudFormation
-=====================================================================================================
+============================================================================================================
 * CloudFormation allows you to take what was once traditional hardware infrastructure and convert it into **code**
 * CloudFormation gives developers and system administrators an easy way to create and manage a collection of related
 AWS resources, provisioning and updating them in an orderly and predictable fashion
