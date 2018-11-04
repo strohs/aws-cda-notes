@@ -1662,16 +1662,20 @@ process it
     * default is 30 seconds
         * increase it if your task takes > 30 secs
         * max vis. timeout is 12 hours
+    * you can call ```ChangeMessageVisibility``` to specify a new timeout value. SQS will restart the timeout 
+    period using the new value
 * Short Polling (default)
     * a request to SQS using short polling returns immediately even if no messages are in the queue
 * Long Polling
     * a request using long polling polls the queue periodically and only returns a response when a message is in
     the queue or the timeout is reached
+    * ```ReceiveMessage( WaitTimeSeconds )``` - API call to enable long polling, must set WaitTimeSeconds parameter 
+        * **MAX poll wait time = 20 seconds**
 
 
 
 Simple Notification Service (SNS)
-=================================================================================
+====================================================================================================================
 * SNS is a web-service that makes it easy to set up, operate, and send notifications from the cloud.
 * It provides developers with a highly scalable, flexible, and cost-effective capability to publish messages from an
 application and immediately deliver them to subscribers or other applications
@@ -2096,6 +2100,143 @@ infrastructure environments easily
             * suitable for prod environments, more flexible
             * allows connections from multiple EB environments
                 * you can tear down the app stack without impacting the DB
+
+
+Developer Theory (Continuous Integration (CI) / Continuous Deployment (CD))
+======================================================================================================================
+* CI & CD are best practices for software development and deployment
+* they enable frequent software changes to be applied whilst maintaining system and service stability
+* companies like AWS,Netflix,Google and Facebook have pioneered this approach to releasing code, successfully
+applying thousands of changes per day
+
+### Continuous Integration Workflow
+1. imagine multiple developers working on different features or bug fixes for an application
+    * All contributing to the same application
+    * sharing the same code repository (e.g. GIT)
+    * frequently pushing their updates into the shared repo (at least daily)
+2. the code repository is integrated with a build management system
+    * code changes trigger an automated build (no matter how big or small the code change)
+    * we need a way to ensure that any code change does not break the build or introduce new bugs into the application
+        * ...so you need a test framework
+3. the test framework runs automated tests on the newly built application
+    * unit tests, integration tests, etc...
+    * identifies any bugs, preventing issues from being introduced in the master code
+    * CI focuses on small code changes which are committed into the main repository once they have been
+    successfully tested
+
+### Continuous Delivery / Deployment
+* CD can mean either Continuous delivery or continuous deployment
+* **continuous delivery** is a development practice where merged changes are automatically built, tested and prepared for
+release into staging and eventually production environments
+    * **there is usually a manual decision process to initiate deployment of the new code**
+* **continuous deployment** takes the idea of automation one step further and automatically deploys the new code 
+following successful testing, eliminating any manual steps
+    * the new code is automatically released as soon as it passes through the stages of your release process
+    * Small changes are released early and frequently
+* both practices require the build, test and deployment processes to be fully automated but **continuous deployment**
+also automates the release process as well
+
+## CodeCommit
+* AWS's code repository
+* it's a private GIT repository
+* developers create a branch (copy) of the master repository and make their code changes to the branch
+* once their code changes are complete they push their changes, called a *commit*, to the master repository
+* their changes can then be merged into the master repository (called a *pull* request)
+* your data is encrypted in transit and at rest (within CodeCommit)
+
+## CodeBuild
+* AWS's build management system
+* it can compile your code
+* run some basic tests
+* can create software packages that are ready to deploy to your environment
+
+## CodeDeploy
+* automated application deployment service
+* it can deploy your code to:
+    * EC2 instances
+    * on premises systems
+    * and lambda functions
+* allows you to quickly release new features, avoid downtime during application deployments and avoid the risks
+associated with manual processes
+* automatically scales with your infrastructure and integrates with various CI/CD tools:
+    * Jenkins, GitHub, Atlassian, CodePipeline
+    * and config management tools like:
+        * Ansible, Puppet, Chef
+* **Two deployment approaches available:**
+    * **in-place**
+        * the application is stopped on each instance and the latest revision is installed
+        * the instance is out of service during this time and your capacity is reduced
+        * if the instances are behind a load balancer, you can configure the load balancer to stop sending requests
+        to the instances which are being upgraded
+        * a.k.a *Rolling Update*
+        * it can only be used for EC@ and on-premise systems
+            * it is **not supported for Lambda**
+        * if you need to roll-back your changes, the previous version of the application will need to be re-deployed
+    * **Blue/Green**
+        * new instances are provisioned and the latest revision is installed on the new instances
+        * Blue represents the active deployment, green is the new release
+        * the new instances are registered with an Elastic Load Balancer, traffic is then routed to the new instance
+        and the original instances are eventually terminated
+        * advantages are: 
+            * that the new instances can be created ahead of time and the code released to production by simply 
+            switching all traffic to the new servers
+            * switching back to the original environment is faster and more reliable and is just a case of routing 
+            the traffic back to the original servers (assuming you haven't terminated them)
+* CodeDeploy Terminology
+    * *Deployment Group* - a set of EC2 instances or Lambda functions to which a new revision of the software is to 
+    be deployed
+    * *Deployment* - the process and components used to apply a new revision
+    * *Deployment Configuration* - a set of deployment rules as well as success/failure conditions used during a
+    deployment
+    * *AppSpec File* - defines the deployment actions you want AWS CodeDeploy to execute
+    * *Revision* - everything needed to deploy the new version: AppSpec File, application files, executables, configs
+    * *Application* - unique identifier for the application you want to deploy, to ensure the correct combination of
+    revision, deployment configuration and deployment group are referenced during a deployment
+
+## CodePipeline
+* AWS's continuous deployment service
+* allows you to model, visualize, and automate your entire release process
+* CodePipeline can use all of the above mentioned AWS services
+
+
+## Developer Theory Exam tips
+* CI/CD
+    * read AWS's CI/CD [whitepaper](https://d1.awsstatic.com/whitepapers/DevOps/practicing-continuous-integration-continuous-delivery-on-AWS.pdf)
+    * continuous integration is **about integrating or merging code changes** frequently
+        * at least once per day
+        * enables multiple devs to work on the same application
+    * continuous delivery is all **about automating the build, test and deployment functions**
+        * human intervention is typically needed to approve code deployment
+    * continuous deployment **fully automates the entire release process**
+        * code is deployed into Production as soon as it has successfully passed through the release
+        pipeline
+* CodeCommit
+    * private git repository
+        * tracks and manages code changes
+        * maintains version history
+        * manages updates from multiple sources and enables collaboration
+* CodeBuild - compiles code, rums tests, packages code
+* CodeDeploy - automated deployment to EC2, on premise systems, or Lambda
+    * can be used as part of a Continuous Delivery or Continuous Deployment process
+    * In-Place or Rolling Update
+        * application is stopped on each host and then the code is deployed
+        * EC2 and on premise systems only
+        * to roll-back you must re-deploy the previous version of the application
+    * Blue / Green
+        * new instances are provisioned and the new application is deployed to these new instances
+        * traffic is routed to the new instances according to your own schedule
+        * supported for EC2, on-premise, and Lambda functions
+        * blue is active deployment and green is the new release
+
+
+
+
+
+
+
+
+
+
 
 
 
