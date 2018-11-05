@@ -1,5 +1,5 @@
 AWS Certified Developer - Associate (June 2018)
-=====================================
+===================================================================================================================
 [AWS Certified Developer](https://aws.amazon.com/certification/certified-developer-associate/)
 ## Exam Blueprint
 1. Deployment 22%
@@ -9,7 +9,7 @@ AWS Certified Developer - Associate (June 2018)
 5. Monitoring and Troubleshooting 12%
 
 IAM 101
-=====================================================================================
+====================================================================================================================
 * centralized control over your AWS account
 * Shared access to your AWS account
 * Granular permissions
@@ -153,7 +153,7 @@ component
     * S3 Buckets
 
 RDS 101 (Relational Database Service)
-=====================================
+====================================================================================================================
 * RDB types offered by AWS (these all support multi-AZ)
     * **SQL Server**
     * **ORACLE**
@@ -2194,10 +2194,21 @@ associated with manual processes
     revision, deployment configuration and deployment group are referenced during a deployment
 
 ## CodePipeline
-* AWS's continuous deployment service
+* AWS's fully managed continuous integration and continuous delivery service
 * allows you to model, visualize, and automate your entire release process
-* CodePipeline can use all of the above mentioned AWS services
-
+* CodePipeline can use all of the above mentioned AWS services (CodeCommit,CodeBuild,CodeDeploy)
+    * plus Lambda, Elastic Beanstalk, CloudFormation, Elastic Container Service
+    * and third party tools like GitHub and Jenkins
+* CodePipeline allows you to model your release process as a workflow or pipeline made up of different tasks:
+    * `CODE UPDATE -> BUILD -> TEST -> DEPLOY`
+    * You define what happens and where for each of the different stages of the workflow
+        * this can be modeled using the CodePipeline GUI or CLI
+    * Every code change pushed to your code repository automatically enters the workflow and triggers the set of
+    actions defined for each stage of the pipeline
+    * the pipeline automatically stops if one of the stages fails
+        * e.g. if one of your automated unit tests fails
+        * this ensures that bugs are caught before the code is deployed while they are still easy to fix
+        
 
 ## Developer Theory Exam tips
 * CI/CD
@@ -2227,7 +2238,13 @@ associated with manual processes
         * traffic is routed to the new instances according to your own schedule
         * supported for EC2, on-premise, and Lambda functions
         * blue is active deployment and green is the new release
-
+* CodePipeline
+    * Continuous Integration / Continuous Delivery Service
+    * automates your end-to-end software release process based on a user defined workflow
+    * can be configured to automatically trigger your pipeline as soon as a change is detected in your source code
+    repository
+    * integrates with other services from AWS like CodeBuild and CodeDeploy, as well as third-party and custom plug-ins
+    
 
 
 
