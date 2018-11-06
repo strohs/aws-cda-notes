@@ -36,11 +36,107 @@ IAM 101
     * if you loose them, you have to regenerate them
 
 
+## Advanced IAM
+### Inline Policies vs Managed Policies vs Custom Policies
+* there are 3 different types of IAM policies available
+    * managed policies
+    * customer managed policies
+    * inline policies
+
+#### Managed Policies
+* a **managed policy** is an IAM policy which is created an administered by AWS
+* AWS provide managed policies for common use cases based on job function:
+    * AmazonDynamoDBFullAccess, AWSCodeCommitPowerUser....
+* These AWS-provided policies allow you to assign appropriate permissions to your users, groups and roles without
+having to write the policy yourself
+* a single managed policy can be attached to multiple users, groups or roles within the same AWS account and across
+different accounts
+* you cannot change the permissions defined in an AWS Managed Policy
+
+#### Customer Managed Policies
+* a **customer managed policy** is a standalone policy that you create and administer inside your own AWS account
+* you can attach this policy to multiple users, groups and roles
+    * but only within your own account
+* in order to create a Customer Managed Policy, you can copy an existing AWS Managed Policy and customize it to fit
+the requirements of your organization
+* recommended for use cases where the existing AWS Managed Policies don't meet the needs of your environment
+
+#### Inline Policies
+* an **inline policy** is an IAM policy which is actually embedded within the user, group or role to which it
+applies
+    * there is a strict 1:1 relationship between the entity and the policy
+* when you delete the user,group or role in which the inline policy is embedded, the policy will also be deleted
+* in most cases, AWS recommends managed policies over Inline Policies
+* inline policies are useful when you want to be sure that the permissions in a policy are not inadvertently assigned
+to any other user, group, or role than the one for which they're intended
+
+
+### Web Identity Federation
+* lets you give your users access to AWS resources after they have successfully authenticated with a web-based identity 
+provider like Amazon, Facebook, or Google
+* following successful authentication, the use receives an authentication code from the web id provider, which they
+can trade for temporary AWS security credentials
+
+### Cognito
+* Amazon Cognito provides Web Identity Federation with the following features:
+    * sign-up and sign-in to your apps
+    * access for guest users
+    * acts as an identity broker between your application and Web ID providers so you don't need to write any 
+    additional code
+    * synchronizes user data for multiple devices
+* recommended for all mobile applications which run on AWS
+* the recommended approach for Web Identity Federation using social media accounts (like Facebook)
+* cognito brokers between the your application and Facebook or Google to provide temporary credentials which map to
+an IAM role allowing access to the required resources
+* no need for the application to embed or store AWS credentials locally on the device and it gives users a seamless
+experience across all mobile devices
+    
+
+#### User Pools
+* user pools are user directories used to manage sign-up and sign-in functionality for mobile and web applications
+* users can sign in directly to the user pool, or indirectly via an identity provider (like Facebook, Google,....)
+* cognito acts as an identity broker between the ID provider and AWS
+* successful authentication generates a number of JSON Web Tokens
+
+#### Identity Pools
+* Identity Pools enable you to create unique identities for your users and authenticate them with identity providers
+* with an identity, you can obtain temporary, limited-privilege AWS credentials to access other AWS services
+
+#### Push Synchronization
+* cognito tracks the association between user identity and the various different devices they sign-in from
+* in order to provide a seamless user experience for your application, cognito uses *push synchronization* to push
+updates and synchronize user data across multiple devices
+* SNS is used to send a silent push notification to all the devices associated with a given user identity whenever
+data stored in the cloud changes
+
+## Advanced IAM Exam Tips
+* federation allows users to authenticate with a Web Identity Provider (Google,Facebook,Amazon...)
+* the user authenticates first with the Web ID provider and receives an authentication token which is exchanged for
+temporary AWS credentials allowing them to assume an IAM role
+* Cognito 
+    * is an Identity Broker which handles interaction between your applications and the Web ID provider
+    * you don't need to write your own code to do this
+    * provides sign-up, sign-in and guest user access
+    * syncs user data for a seamless experience across your devices
+    * Cognito is the AWS recommended approach for Web ID Federation, particularly for mobile Apps
+    * user pools are used to manage user sign-up and sign-in directly or via web identity providers
+    * cognito acts as an identity broker, handling all interaction with Web Identity Providers
+    * cognito uses *Push Synchronization* to send a silent push notification of user data updates to multiple device
+    types associated with a user ID
+* IAM Policies
+    * remember the 3 different types:
+        * Manage Policy - aws-managed default policies
+        * Customer Managed Policy - managed by you
+        * Inline Policy - managed by you, but embedded in a single user, group, or role
+    * in most cases, AWS recommends using Managed Policies over inline policies
+
+
 EC2
 =======================================================================================================================
 ## EC2 Instances
 * **On Demand** - you pay a fixed rate, by the hour (or second) with no commitment
-    * perfect for users that want low cost and flexibility of AWS EC2 without any up-front payment or long term commitment
+    * perfect for users that want low cost and flexibility of AWS EC2 without any up-front payment or long term 
+    commitment
     * applications with short term, spiky, unpredictable workloads that cannot be interrupted
     * applications being developed or tested EC2 for the first time
 * **Reserved** - provide you with a capacity reservation and offer a significant discount on the hourly charge. 
@@ -57,8 +153,8 @@ EC2
 applications have flexible start/end times
     * application that have flexible start and end times
     * applications that are only feasible at very low compute prices
-* **Dedicated Hosts** - Physical EC2 server dedicated for your use. Dedicated hosts can help reduce costs by allowing you
-to use your existing server bound software licenses.
+* **Dedicated Hosts** - Physical EC2 server dedicated for your use. Dedicated hosts can help reduce costs by allowing
+you to use your existing server bound software licenses.
     * useful for regulatory requirements that may not support multi-tenant virtualization
     * great for licensing which does not support multi-tenancy or cloud deployments
     * can be purchased On-Demand (hourly)
@@ -2308,14 +2404,26 @@ hooks:
         * tracks and manages code changes
         * maintains version history
         * manages updates from multiple sources and enables collaboration
-* CodeBuild - compiles code, rums tests, packages code
+* CodeBuild
+    * compiles code, rums tests, packages code
+    * use `buildspec.yml` to define the build commands and settings used by CodeBuild to run your build
+        * buildspec settings can be supplied or overridden in the CodeBuild web console
+        * if the build fails, you can check logs in the CodeBuild console or view complete logs in CloudWatch
+* CodeBuild with Docker
+    * know docker commands to build,tag and push your docker image to the ECR Repository:
+        * `docker build -t MYIMAGEREPO .`
+            * builds a docker image from a Dockerfile
+        * `docker tag 111222333444.dkr.ecr.us-east-1.amazonaws.com/my-docker-repo`
+            * tags the image so it can be pushed to your ECR repository
+        * `docker push 11122233344.dkr.ecr.us-east-1.amazonaws.com/my-docker-repo:latest`
+            * pushes your image into the ECR repository
 * CodeDeploy - automated deployment to EC2, on premise systems, or Lambda
     * can be used as part of a Continuous Delivery or Continuous Deployment process
-    * In-Place or Rolling Update
+    * **In-Place or Rolling Update**
         * application is stopped on each host and then the code is deployed
         * EC2 and on premise systems only
         * to roll-back you must re-deploy the previous version of the application
-    * Blue / Green
+    * **Blue / Green**
         * new instances are provisioned and the new application is deployed to these new instances
         * traffic is routed to the new instances according to your own schedule
         * supported for EC2, on-premise, and Lambda functions
@@ -2346,14 +2454,6 @@ hooks:
 
 
 
-
-
-
-
-
-
-
-
 CloudFormation
 ============================================================================================================
 * CloudFormation allows you to take what was once traditional hardware infrastructure and convert it into **code**
@@ -2364,6 +2464,14 @@ work. CloudFormation takes care of it for you
 * After your AWS resources are deployed, you can modify and update them in a controlled and predictable way, in
 effect applying version control to your AWS infrastructure the same way you do with your software
 
+## Benefits
+* infrastructure is provisioned consistently, with fewer mistakes
+* less time and effort than configuring things manually
+* you can version control and peer review your templates
+* free to use (charged for what you create)
+* can be used to manage updates and dependencies
+* can be used to rollback and delete the entire stack as well
+
 ## CloudFormation Stack vs. Template
 * A CloudFormation Template is essentially an architectural diagram
 * A CloudFormation Stack is the end result of that diagram (i.e. what is actually provisioned)
@@ -2373,59 +2481,129 @@ Templates
 
 ## Elements of a Template
 * Mandatory Elements
-    * List of AWS resources and their associated configuration values
+    * Resources 
+        * List of AWS resources and their associated configuration values
 * Optional Elements
-    * The template's file format and version number
-    * Template parameters
+    * AWSTemplateFormatVersion: "2010-09-09"
+    * Metadata
+    * Conditions
+        * used to test a condition and then take action
+    * Parameters
         * the input values that are supplied at stack creation time. Limit of 60
-    * Output Values
+    * Outputs
         * The output values required once a stack has finished building (such as the public IP address, ELB address
         ,etc.) Limit of 60
-    * List of data tables
+    * Mappings
         * used to look up static configuration values such as AMI's etc...
+    * Transform
+        * used to reference additional code stored in S3
+        * used to specify macros to run on the template, such as `AWS::Serverless-2016-10-31`
 
-## A Simple Template
-```json
-{
-  "Resources" : { 
-    "HelloBucket" : {
-        "Type":"AWS::S3::Bucket"
-    } 
-  }
-}
+### Template anatomy
+```yaml
+AWSTemplateFormatVersion: "2010-09-09"
+# this is the only supported version
+
+Description:
+  String
+
+Metadata:
+  Instances:
+      Description: "Information about the instances"
+    Databases: 
+      Description: "Information about the databases"
+
+Parameters:
+  EnvType: 
+      Description: Environment type.
+      Default: test
+      Type: String
+      AllowedValues: 
+        - prod
+        - test
+      ConstraintDescription: must specify prod or test.
+
+Mappings:
+  # set values based on a region
+  RegionMap: 
+      us-east-1: 
+        AMI: "ami-0ff8a91507f77f867"
+        TestAz: "us-east-1a"
+      us-west-1: 
+        AMI: "ami-0bdb828fd58c52235"
+        TestAz: "us-west-1a"
+
+Conditions: 
+  # can be used to test a condition and then take action
+  #  = true if the EnvType parameter is prod
+  CreateProdResources: !Equals [ !Ref EnvType, prod ]
+
+Transform:
+  # 1. specifies one or more macros that AWS CloudFormation uses to process your template
+  # 2. can also specify a template snippet to include in this template
+  Name: 'AWS::Include'
+  Parameters:
+    Location: 's3://MyAmazonS3BucketName/MyFileName.yaml'
+
+# Transform: AWS::Serverless-2016-10-31
+#  this type of transform specifies that the template is written using AWS SAM and needs to be transformed
+
+Resources:
+  MyEC2Instance:
+      Type: "AWS::EC2::Instance"
+      Properties:
+        ImageId: "ami-0ff8a91507f77f867"
+
+Outputs:
+  # can be used to declare output values that you can import into other stacks
+  StackVPC:
+      Description: The ID of the VPC
+      Value: !Ref MyVPC
+      Export:
+        Name: !Sub "${AWS::StackName}-VPCID"
 ```
 
-## Outputting Data
-* (E) **You can use ```Fn:GetAtt``` to output data**
-    * prints the values of the resources that have been configured by CloudFormation
+## Serverless Application Model (SAM)
+* **SAM** is an extension to CloudFormation used to define serverless applications
+* it provides simplified syntax for defining serverless resources: APIs, Lambdas, DynamoDB Tables
+* you use the SAM CLI to package your deployment code, upload it to S# and deploy your serverless application
 
-```json
-{ "PublicIP" : {
-    "Description":"Public IP address of the web server", 
-    "Value" : { 
-        "Fn:GetAtt" : [
-            "WebServerHost", "PublicIp"
-        ]
-    }
- }
-}
-```
-
+### SAM CLI Commands
+* `sam package` - uses a yaml template written in SAM to package your serverless application and upload it to a
+S3 bucket. Generates a template file that can be used by the sam deploy command
+    ```
+    sam package \
+       --template-file ./template.yaml \
+       --output-template-file ./serverless-output.yaml \
+       --s3-bucket bucket-name-here
+    ```
+* `sam deploy` - deploys your serverless app using CloudFormation
+    ```
+    sam deploy \
+       --template-file serverless-output.yaml \
+       --stack-name LambdaExampleStack \
+       --capabilities CAPABILITY_IAM <-- enables the command to create an IAM role that allows the function to execute
+    ```
+    
+    
 ## Exam Tips
-* CloudFormation *automatic rollback on error* is enabled by default
-    * if stack fails to start-up, it will automatically roll-back and delete any resources it created
-* You are charged for errors (e.g. any EC2 instances you accidentally spin up...)
+* CloudFormation allows you to manage, configure and provision AWS infrastructure as code
+* written in YAML or JSON
+* Remember the main sections of a template
+    * **Paramters** - input custom values for use in the template
+    * **Conditions** - provision resources based on the environment
+    * **Resources** - mandatory - the AWS resources to create
+    * **Mappings** - create custom mappings like Region:AMI
+    * **Transforms**
+        * used to run macros that transform your template or import other templates
+            * code to import resides in S3
+        * used to specify serverless transforms `AWS::Serverless-2016-10-31`
 * CloudFormation itself is free (the resources it creates are not)
-* **Stacks can wait for applications to be provisioned using the ```WaitCondition```**
-    * e.g. you need to wait for some resource to be created first, before moving on
-* You can use ```Fn:GetAtt``` to output data
-* You can use the `Ref` function to refer to an identifying property of a resource.
-    * Frequently, this is the physical name of the resource; however, sometimes it can be an identifier, 
-    such as the IP address for an AWS::EC2::EIP resource or an Amazon Resource Name (ARN) for an Amazon SNS topic
-* Route53 is completely supported. This includes creating **new** hosted zones or **updating** existing ones
-* You can create A-Records, Aliases etc...
-* IAM Role Creation and Assignment is also supported
-* May get scenario question on exam comparing ElasticBeanstalk to CloudFormation
+* **SAM** is the serverless application model
+* allows you to define and provision serverless applications using CloudFormation
+* uses the SAM CLI Commands to package and deploy your serverless app
+    * `sam package` - packages your application and uploads it to S3
+    * `sam deploy` - deploys your serverless app using CloudFormation
 
 
 
@@ -2497,27 +2675,5 @@ You may also create your own custom platform using *Packer*
 * You pay for the AWS resources EB configures for you (EB itself is free)
 
 
-Cognito
-=======================================================================
-## User Pools
-* use user pools when you have:
-    * users who want to create an account
-    * users who have an existing corporate or social(facebook,google,etc.) account
-* use user pools when you want:
-    * a managed scalable and secure user directory
-    * user authentication
-    * user profiles
-    * OpenID connect id token, access token, and refresh token to authenticate/authorize against your backend service
-    * OAuth 2.0 flows for your app to authenticate with User Pool
-    * OAuth 2.0 and SAML2 redirect/POST bindings to authenticate with identity providers
-    * integration with API Gateway
 
-## Identity Pools
-* use identity pools if you have:
-    * a user that has already authenticated with a social or corporate identity provider and has a token
-    * a user that is unauthenticated
-* use identity pools if you want:
-    * scoped time-bound AWS credentials for that identity
-    * direct access to AWS services from your web or mobile app
-    * role mapping
 
