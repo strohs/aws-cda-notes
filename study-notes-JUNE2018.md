@@ -2193,6 +2193,88 @@ associated with manual processes
     * *Application* - unique identifier for the application you want to deploy, to ensure the correct combination of
     revision, deployment configuration and deployment group are referenced during a deployment
 
+### AppSpec File
+* The `appspec` file is used to define the parameters that will be used for a CodeDeploy deployment
+and the file structure will depend on if you are deploying to Lambda or EC2/On Premise
+
+#### Appspec Lambda Deployment
+* the appspec may be written in YAML or JSON and contains the following fields:
+    * `version` - reserved for future use (currently allows 0.0 as latest version)
+    * `resources` - the name and properties of the Lambda function to deploy
+    * `hooks` - specifies **Lambda functions** to run at set points in the deployment lifecycle to
+    validate deployments
+        * `beforeAllowTraffic` - used to specify tasks or functions you want to run before traffic is routed to the
+        newly deployed Lambda function (e.g. test that the function has been deployed correctly)
+        * `afterAllowTraffic` - used to specify the tasks or functions you want to run after the traffic has been
+        routed to the newly deployed Lambda function (e.g. to test that the function is accepting traffic correctly)
+
+
+```yaml
+version: 0.0
+Resources:
+  - myLambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+      # the following four fields are mandatory
+        Name: "myLambdaFunction"
+        Alias: "myLambdaFunctionAlias"
+        CurrentVersion: "1"
+        TargetVersion: "2"
+Hooks:
+    # runs the specified Lambda before traffic is shifted to the deployed lambda function version 
+    - BeforeAllowTraffic: "LambdaFunctionToValidateBeforeTrafficShift"
+    # runs the specified Lambda after all traffic is shifted to the deployed Lambda function version
+    - AfterAllowTraffic: "LambdaFunctionToValidateAfterTrafficShift"
+```
+
+#### Appspec EC2/On Premises deployments
+* can be written in YAML or JSON
+* must be placed in the root directory of your revision, otherwise deployments will fail
+* `version` - reserved (allows 0.0)
+* `os` - the os version you are using: either *linux* or *windows*
+* `files` - location of any application files that need to be copied and where they should be copied to
+* `hooks` - lifecycle event hooks allow you to specify **scripts** that need to run at set points in the deployment
+lifecycle (e.g. to unzip app files prior to deployment, run functional tests, de-register/re-register instances with LB)
+    1. `BeforeBlockTraffic` - run tasks on instances before they are deregistered form a load balancer
+    2. `BlockTraffic` - deregister instances from a load balancer (cannot be scripted, only if using a LoadBalancer)
+    3. `AfterBlockTraffic` - run tasks on instances after they are deregistered from a load balancer
+    * common hooks when deploying any application (whether using a LoadBalancer or deploying direct to an instance)
+        4. `ApplicationStop` - stop currently deployed app
+        5. `DownloadBundle` - codeDeploy agent copies application revision to a temp location (not scriptable)
+        6. `BeforeInstall`  - runs any preinstallation scripts
+        7. `Install` - codeDeploy agent copies application revision files to their correct location (not scriptable)
+        8. `AfterInstall` - runs any configured post-installation scripts
+        9. `ApplicationStart` - restarts any services that were stopped during applicationStop
+        10. `ValidateService` - runs scripts (to test) that the service is running correctly
+    11. `BeforeAllowTraffic` - run tasks before instance is registered with a LoadBalancer
+    12. `AllowTraffic` - register instances with a LoadBalancer (not scriptable)
+    13. `AfterAllowTraffic` - run tasks on instances after they are registered with a Load Balancer
+        
+
+```yaml
+version: 0.0
+os: linux
+files:
+  - source: Config/config.txt
+    destination: /webapps/Config
+  - source: source
+    destination: /webapps/myApp
+hooks:
+  BeforeInstall:
+    - location: Scripts/UnzipResourceBundle.sh
+    - location: Scripts/UnzipDataBundle.sh
+  AfterInstall:
+    - location: Scripts/RunResourceTests.sh
+      timeout: 180
+  ApplicationStart:
+    - location: Scripts/RunFunctionalTests.sh
+      timeout: 3600
+  ValidateService:
+    - location: Scripts/MonitorService.sh
+      timeout: 3600
+      runas: codedeployuser
+```
+
 ## CodePipeline
 * AWS's fully managed continuous integration and continuous delivery service
 * allows you to model, visualize, and automate your entire release process
@@ -2238,6 +2320,21 @@ associated with manual processes
         * traffic is routed to the new instances according to your own schedule
         * supported for EC2, on-premise, and Lambda functions
         * blue is active deployment and green is the new release
+    * the `appspec` file defines all the parameters needed for the deployment
+        * e.g. location of application files and pre/post deployment validation tests to run
+    * For EC2/On Premise systems, the appspec.yml file must be placed in the root directory of your revision
+        * **written in YAML only**
+    * lambda appspec supports YAML or JSON
+    * the run order for hooks in a EC2 appspec:
+        * `BeforeBlockTraffic --> BlockTraffic --> AfterBlockTraffic`
+        * `ApplicationStop`
+        * `DownloadBundle`
+        * `BeforeInstall`
+        * `Install`
+        * `AfterInstall`
+        * `ApplicationStart`
+        * `ValidateService`
+        * `BeforeAllowTraffic --> AllowTraffic --> AfterAllowTraffic`
 * CodePipeline
     * Continuous Integration / Continuous Delivery Service
     * automates your end-to-end software release process based on a user defined workflow
