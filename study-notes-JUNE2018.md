@@ -248,6 +248,7 @@ component
     * Load Balancers
     * S3 Buckets
 
+
 RDS 101 (Relational Database Service)
 ====================================================================================================================
 * RDB types offered by AWS (these all support multi-AZ)
