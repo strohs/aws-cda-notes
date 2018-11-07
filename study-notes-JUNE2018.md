@@ -890,7 +890,7 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
     * these Lambdas can change CloudFront requests and responses
 * Systems Manager Parameter Store
     * can be used instead of Lambdas environment variables to store sensitive configurations
-    * makes it easy to share these values between Lambda functions
+    * makes it easy to share common variables between Lambda functions
     * 
 
 ## Limits
