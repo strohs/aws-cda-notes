@@ -89,8 +89,7 @@ can trade for temporary AWS security credentials
 * cognito brokers between the your application and Facebook or Google to provide temporary credentials which map to
 an IAM role allowing access to the required resources
 * no need for the application to embed or store AWS credentials locally on the device and it gives users a seamless
-experience across all mobile devices
-    
+experience across all mobile devices    
 
 #### User Pools
 * user pools are user directories used to manage sign-up and sign-in functionality for mobile and web applications
@@ -108,6 +107,14 @@ experience across all mobile devices
 updates and synchronize user data across multiple devices
 * SNS is used to send a silent push notification to all the devices associated with a given user identity whenever
 data stored in the cloud changes
+
+#### Cognito Streams
+* gives developers control and insight into their data stored in Amazon Cognito
+* Cogntio can push data to a Kinesis stream in real-time
+* all of your sync data can be moved Kineses, which can then be streamed to a data-wharehouse tool, like Redshift
+
+#### Cognito Events
+* enable you to execute Lambda functions in response to important events within Cognito (called a Sync Trigger)
 
 ## Advanced IAM Exam Tips
 * federation allows users to authenticate with a Web Identity Provider (Google,Facebook,Amazon...)
@@ -846,6 +853,16 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
     points to version 2. If you find something wrong, you can easily roll back the production version to version 1
     by remapping the PROD alias so that it points to version 1
 
+## AWS Systems Manager Parameter Store
+* provides secure hierarchical storage for configuration data management and secrets management
+* you can store data such as passwords, database strings, licencse codes...
+* can be stores as plaintext or encrypted
+* can reference values using the unique name you specified when creating the parameter
+* offered at no additional charge
+* You can reference Systems Manager parameters in your scripts, commands, and configuration and automation workflows
+* gives you fine grained access to your sensitive data
+* can also reference parameters in other AWS services such as Amazon Elastic Container Service and AWS Lambda
+
 ## Lambda Exam Tips
 * Lambda scales out (not up) automatically
 * Lambda functions are independent, 1 event = 1 function
@@ -867,7 +884,14 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
     * versions are immutable (cannot be changed)
     * **can split traffic using aliases to different versions (only two way split)**
         * **cannot split traffic using $latest, instead create an alias to $latest**
-     
+* Lambda@Edge
+    * lets you run lambda functions to customize content that CloudFront Delivers
+    * executes the Lambdas in AWS locations closer to the viewer
+    * these Lambdas can change CloudFront requests and responses
+* Systems Manager Parameter Store
+    * can be used instead of Lambdas environment variables to store sensitive configurations
+    * makes it easy to share these values between Lambda functions
+    * 
 
 ## Limits
 * Memory
@@ -1046,6 +1070,17 @@ services, such as applications running on EC2, code running on AWS Lambda, or an
     * set security (if needed)
     * choose target (such as EC2, Lambda, DynamoDB, etc..)
     * Set request and response transformations
+        1. **Method Request**
+            * this is for information about thr method's authorization settings and the parameters it can receive
+                * e.g. query strings, headers, body "shape", content-types
+        2. **Integration Request**
+            * used for optionally modifying request data before sending it to the target backend (lambda, HTTP endpoint)
+        3. target backend is called here
+        4. **Integration Response**
+            * used for mapping the possible responses from the target backend to Method Response types
+        5. **Method Response**
+            * information about this method's response types, their headers and content types
+        
 * Deploy API to a *Stage*
     * uses API Gateway domain, by default
     * you can have a "prod" stage, "dev" stage, "test" stage, "v1" etc...
@@ -2266,7 +2301,7 @@ associated with manual processes
         * if the instances are behind a load balancer, you can configure the load balancer to stop sending requests
         to the instances which are being upgraded
         * a.k.a *Rolling Update*
-        * it can only be used for EC@ and on-premise systems
+        * it can only be used for EC2 and on-premise systems
             * it is **not supported for Lambda**
         * if you need to roll-back your changes, the previous version of the application will need to be re-deployed
     * **Blue/Green**
@@ -2501,7 +2536,7 @@ Templates
         * used to specify macros to run on the template, such as `AWS::Serverless-2016-10-31`
 
 ### Template anatomy
-```yaml
+```
 AWSTemplateFormatVersion: "2010-09-09"
 # this is the only supported version
 
@@ -2559,7 +2594,7 @@ Outputs:
   # can be used to declare output values that you can import into other stacks
   StackVPC:
       Description: The ID of the VPC
-      Value: !Ref MyVPC
+      Value: !Ref MyEC2Instance
       Export:
         Name: !Sub "${AWS::StackName}-VPCID"
 ```
@@ -2608,73 +2643,70 @@ S3 bucket. Generates a template file that can be used by the sam deploy command
 
 
 
-Elastic Beanstalk
-=======================================================================================
-## Overview
-* With Elastic Beanstalk you can deploy, monitor and scale an application quickly
-* It provides developers or end users with the ability to provision application infrastructure in an almost
-transparent way
-* Elastic Beanstalk enables developers to just "upload their code" and have Elastic Beanstalk provision the underlying
-resources underneath
-* It has a highly abstract focus towards infrastructure, focusing on components and performance, not configuration and
-specifications
-* It attempts to remove or significantly simplify infrastructure management, allowing applications to be deployed into
-infrastructure environments easily
-* AWS invented this so developers that didn't have much AWS experience would start deploying their applications to AWS
+CloudWatch
+================================================================================
+* cloudWatch is a monitoring service for monotoring your AWS resources, as well as the applications that run
+on AWS
+* it can monitor things like:
+    * compute
+        * autoscaling groups
+        * elastic load balancers
+        * Route53 health checks
+    * Storage and Content delivery
+        * EBS Volumes
+        * storage gateways
+        * CloudFront
+    * Databases and Analytics
+        * DynamoDB
+        * Elasticache Nodes
+        * RDS Instances
+        * Elastic MapReduce Job Flows
+        * Redshift
+    * Other
+        * SNS Topics
+        * SQS Queues
+        * Opsworks
+        * CloudWatch Logs
+        * estimated charges on your AWS Bill
 
-## Beanstalk key architecture components
-* Applications are the high level structure in beanstalk
-* Either your entire application is one EB application OR
-    * each logical component of your application can be a EB application or a EB environment within an application
+* normal monitoring time is every 5 minutes 
+* Default Host Level Metrics Consist of:
+    * CPU
+    * Network
+    * Disk
+    * Status Check
+    * **RAM Utilization is a custom metric**
+        
+* CloudWatch will store logs indefinitely, unless you configure it otherwise
+* **you can retrieve data from any terminated EC2 or ELB instance after its termination**
+ 
+## metric granularity
+* depends on the AWS service
+* many default metrics for many default services are 1 minute, but it can be 3 or 5 minutes depending on the
+service
+* **for custom metrics the minimum granularity that you can have is 1 minute**
 
-* Applications can have multiple environments (Prod, Staging, Dev, V1,V2,etc) or functional type (front-end, back-end)
-* Environments are either single instances or scalable
-* Environments are either web server environments or worker environments
+## CloudWatch alarms
+* you can create an alarm to monitor any Amazon CloudWatch metric in your account
+* this can include EC2 CPU Utilization, ELB latency or even charges on your AWS bill
+* you can set the appropriate thresholds in which to trigger the alarms and also set what actions should be
+taken if an alarm state is reached
 
-* application versions are unique packages which represent versions of your apps.
-* each application can have many versions (1:M relationship)
-* application versions can be deployed to environments within an application
-
-## Available Platforms on Elastic Beanstalk
-(E)
-* Preconfigured
-    * PHP
-    * Java
-    * Tomcat
-    * Node.js
-    * Ruby
-    * .NET
-    * Python
-    * Go
-    * Packer
-* Preconfigured - Docker
-    * Glassfish
-    * Go
-    * Python
-* Generic
-    * Docker
-    * Docker multi-container
-
-### Custom Platform
-You may also create your own custom platform using *Packer*
-    
-## Using Elastic Beanstalk with a Database
-* Two options
-    * have EB create and provision a RDS DB for you
-        * you can then configure it to delete the DB upon application termination, 
-        * or configure it to take a snapshot of your DB and store it on S3 upon application termination 
-    * use an existing RDS database
-        * you create this yourself and then configure EB to use it
-
-## Exam tips
-* You can have multiple versions of your applications
-* Your applications can be split into tiers (Web Tier, Application Tier, Database Tier)
-* You can update your application
-* You can do application updates as well as configuration updates
-    * Deployment policies
-        * All at once, Rolling, Rolling with additional batch, and Immutable
-* You pay for the AWS resources EB configures for you (EB itself is free)
-
-
-
-
+## CloudWatch exam tips
+* cloudwatch is a monitoring service to monitor your AWS resources, as well as the applications that you
+run on AWS
+* **Host Level Metrics** consist of:
+    * CPU
+    * Network
+    * Disk (i/o)
+    * Status Check (health check)
+    * **any other type of metric is considered a custom metric**
+        * **ram utilization**
+        * **amount of disk space left**
+        * **minimum granularity for custom metrics is 1 minute**
+* cloudWatch logs are stored indefinitely unless configured otherwise
+* you can retrieve data from any terminated EC2 or ELB instance after its termination
+* Metric Granularity
+    * 1 minute (minimum) for detailed monitoring
+    * 5 minutes for standard monitoring
+* CloudWatch can be used on-premise (need to install SSM agent and CloudWatch agent)
