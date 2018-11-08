@@ -1563,12 +1563,12 @@ DynamoDB
 ## Using Web Identity Providers with DynamoDB
 * You can authenticate users using Web Identity providers
     * Facebook, Google, Amazon, or any other Open-ID connect compatible identity provider
-    * this is done using ```AssumeRoleWithIdentity``` API
+    * this is done using ```AssumeRoleWithWebIdentity``` API
     * you will need to create a Role first
 * (E) For the exam you need to know the basic steps taken to authenticate
     1. User authenticates with ID provider (eg. Facebook)
     2. They are passed a token by their ID provider
-    3. Your code calls ```AssumeRoleWithIdentity``` API and provides the providers token and specifies the ARN for the
+    3. Your code calls ```AssumeRoleWithWebIdentity``` API and provides the providers token and specifies the ARN for the
     IAM role
     4. App can now access DynamoDB from between 15 minutes to 1 hour (default is 1 hour)
 

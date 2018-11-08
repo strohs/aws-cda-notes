@@ -362,10 +362,157 @@ allowing inbound connections from the security group of the EC2 instance on the 
 * these lambdas can change CloudFront requests and responses
 
 ## Systems Manager Parameter Store
-* common, scaleable, cloud based storage for sensitive configuration data
-* data is encrypted at rest and when accessed via SDKs, CLI,
+* cloud based storage for sensitive configuration data
+* data can be in plaintext or encrypted
 * can be used instead of Lambda's environment variables to store sensitive configurations
     * you don't have to expose un-encrpyted parameters in the web console
     * can configure fine-grained access to the parameters via IAM
     * makes it easy to share common,sensitive variables between Lambda functions
 
+## Step Functions
+* allows you to combine various AWS services in a serverless workflow (basically a state machine)
+* allow you to visualize and test your serverless applications
+* automatically triggers and tracks each step of your application and retries when there are errors, so your application
+executes in order and as expected
+* logs the state of each step, so when things do go wrong, you can diagnose what happened and where it happened
+
+
+## X-Ray
+* a service that gathers and collects performance data about your AWS application
+* makes it easy to diagnose errors and/or any performance problems your app may be experiencing, especially when 
+dealing with other services
+* you instrument your code using the X-Ray SDK
+    * the sdk will intercept calls to other AWS sdks used throughout your application, including: HTTP requests, 
+    MySQL, PostgreSQL
+* the intercepted calls are sent to the XRay service in the cloud where they are analyzed and assembled
+* XRay provides a GUI and filtering tools you can use to analyze your
+* Supported Languages
+    * java
+    * Go
+    * Node.js
+    * Python
+    * Ruby
+    * .Net
+* XRay integrates with:
+    * Elastic Load Balancing
+    * Lambda
+    * API Gateway
+    * AWS Elastic Beanstalk
+    * EC2
+
+## API Gateway
+* has caching capabilities to increase performance
+* low cost and scales automatically
+* can throttle API Gateway to prevent attacks
+* can log results to CloudWatch
+* if you are using Javascript/AJAX that uses multiple domains with API Gateway, ensure you have enabled CORS on API Gateway
+* CORS is enforced by the client (usually a web browser)
+* API Gateway can be a SOAP webservice passthrough
+* can import API's using Swagger 2.0 definition files
+* Limits:
+    * **10,000 RPS** or **5000 concurrent requests**
+        * if you go over, you will receive **429 Too Many Requests**
+    * can be increased by contacting AWS support
+
+
+## Dynamo DB
+* AWS's low latency NoSQL database
+* consists of tables, items and attributes
+* supports both document and key-value models
+* supported document formats are JSON, HTML, XML
+* 2 types of Primary Key
+    * Partition Key
+    * Partition Key + Sort Key
+* 2 Consistency Models
+    * eventually consistent
+    * strongly consistent
+        * can take up to 1 second for new writes to be reflected in your read
+* Access is controlled using IAM policies
+    * fine grained control can be achieved by using **IAM Condition** parameter
+        * `dynamodb:LeadingKeys` - allows users to access only the items where the partition key value matches their
+        UserID
+* DynamoDB Indexes:
+    * enable fast queries on specific data columns
+    * give you a different view of your data, based on alternative Partition/Sort keys
+    * Local Secondary Indexes
+        * must be created when you create the table
+        * same partition key as your table
+        * different sort key
+        * can provide strongly consistent reads or eventually consistent
+    * Global Secondary Indexes
+        * can create at any time
+        * different partition key and different sort key
+        * can only provide eventually consistent reads
+* Scans and Queries
+    * a query finds items in a table using only the Primary Key
+        * you provide the primary key name and value to search for
+    * a Scan operation examines every item in the table
+        * by default it returns all data attributes
+            * use a `ProjectionExpression` parameter to indicate which attributes to return
+            * can also use a `FilterExpression` to perform comparisons on the results in order to filter some out
+    * query results are always sorted by the sort key (if there is one)
+        * sorted in ascending order
+            * set `ScanIndexForward(false)` to reverse the order **queries only**
+    * queries are generally almost always more efficient than a scan
+    * reduce the impact of a query or scan by setting a smaller page size, which uses fewer read operations
+    * Isolate scan operations to specific tables and segregate them from your mission critical traffic
+    * may be able to use *parallel scans* to speed up your scans
+        * not recommended for tables that are already experiencing heavy read/write activity
+    * **avoid using scans if you can**
+        * design your tables in such a way that you can use the Query,Get, or BatchGetItem APIs
+* 1 x Write Capacity Unit = 1 x 1KB write per second
+* 1 x Read Capacity Unit = 1 x 4KB strongly consistent read OR 2 x 4KB eventually consistent read
+* Read Units - `(Size of Read rounded to nearest 4KB chunk / 4KB) * number of items = read throughput`
+    * divide by 2 for Eventually Consistent reads
+* Writes - all writes are 1KB in size - `size of each item in KB * number of items = write throughout`
+* `BatchWriteItem` - inserts, replaces or deletes multiple items across multiple tables in a single request
+    * supports batches **up to 25 items** to Put or Delete, **max total request size 16MB**
+* `BatchGetItem` - returns attributes for multiple items across multiple tables using their primary key
+    * size limit of **16MB** and returns a **maximum of 100 items**
+* DAX
+    * a write though caching service
+    * point your API calls to DAX cluster
+        * if item is in the cache it is returned, else DAX performs a eventually consistent read on the actual table
+    * reduced load on DynamoDB tables, may help to reduce provisioned read capacity
+    * not suitable for write-intensive applications or apps. that require Strongly Consistent reads
+
+## KMS and Encryption
+* Customer Master Key (CMK) consists of:
+    * alias
+    * creation date
+    * description
+    * key state (enable or disabled)
+    * **key material**
+        * customer provided
+        * AWS provided
+    * CMKs stored in AWS **can never be exported out of KMS unencrypted**
+    * CMKs can encrypt/decrypt up yo 4KB of data
+* **Data Keys**
+    * encryption keys that are used to encrypt data:
+        * large amounts of data
+        * other data encryption keys
+* Setting up a CMK:
+    * create an alias and description
+    * choose a **key material option**
+        * **KMS**
+            * kms generates the key material
+        * **External**
+            * your own key material
+    * define key **administrative permissions**
+        * IAM users/roles that can administer (but not use the key)
+    * define key **usage permissions**
+        * IAM users/roles that can use the key to encrypt and decrypt data
+* KMS CLI (common commands)
+    * `aws kms encrypt`
+        * encrypts plaintext into ciphertext by using a CMK
+        * can be used to move encrypted data from one region to another
+    * `aws kms decrypt`
+        * decrypts ciphertext
+    * `aws kms re-encrypt`
+        * encrypts data on the server side with a new customer master key without exposing the plaintext of the data
+        * **the data is first decrypted and then re-encrypted**
+        * can be used to change the encryption context of a ciphertext
+    * `aws kms enable-key-rotation`
+        * Enables automatic rotation of the key material for the specified customer master key (CMK)
+            * AWS KMS generates new cryptographic material for the CMK every year
+        * You cannot perform this operation on a CMK in a different AWS account
