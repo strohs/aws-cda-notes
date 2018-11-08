@@ -715,7 +715,7 @@ the URL for the origin that will be calling the bucket
 * Instead of uploading directly to an S3 bucket, you can use a distinct URL to upload to an edge location, 
 which will in turn transfer to S3. 
 * Remember **You get a distinct URL for uploading to your bucket**
-    * **always us the S3 website URL to access bucket resources when running a website on S3** 
+    * **always use the S3 website URL to access bucket resources when running a website on S3** 
         * http://mybucketname.**s3-website**.us-east-1.amazonaws.com
 
 
@@ -853,10 +853,20 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
     points to version 2. If you find something wrong, you can easily roll back the production version to version 1
     by remapping the PROD alias so that it points to version 1
 
+## Best practices
+* Separate the Lambda handler (entry point) from your core logic - helps with testing
+* Take advantage of execution context reuse to improve performance of your function
+* use Lambda environment variables to pass operational parameters to your function
+* control the dependencies in your function's deployment package
+* minimize your deployment package size to its runtime necessities
+* minimize the complexity of your dependencies
+    * prefer simpler frameworks that load quickly upon execution context startup
+* avoid using recursive code in your lambda function
+
 ## AWS Systems Manager Parameter Store
 * provides secure hierarchical storage for configuration data management and secrets management
 * you can store data such as passwords, database strings, licencse codes...
-* can be stores as plaintext or encrypted
+* can be stored as plaintext or encrypted
 * can reference values using the unique name you specified when creating the parameter
 * offered at no additional charge
 * You can reference Systems Manager parameters in your scripts, commands, and configuration and automation workflows
@@ -891,7 +901,7 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
 * Systems Manager Parameter Store
     * can be used instead of Lambdas environment variables to store sensitive configurations
     * makes it easy to share common variables between Lambda functions
-    * 
+ 
 
 ## Limits
 * Memory
