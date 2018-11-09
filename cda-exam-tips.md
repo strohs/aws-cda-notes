@@ -547,3 +547,148 @@ dealing with other services
 * messages are 256KB in size
 * **Messages can be kept in the queue from 1 minute to 14 days**
     * default retention period is **4 days**
+
+## SNS
+* scalable and highly available notification service which allows you to send push notifications from the cloud
+* variety of message formats supported
+    * SMS (text messages)
+    * email
+    * SQS
+    * any HTTP endpoint
+* uses a Pub/Sub model whereby users subscribe to topics
+* it is a push mechanism rather than pull
+* SNS can push messages into (multiple) SQS queues, called FAN-OUT
+* SNS consists of a topic and each topic can have multiple subscriptions
+    * max topic name length is 256 characters
+* once a message is successfully published to a topic, it cannot be recalled
+* be default, **10 million** subscriptions per topic, and **100,000*** topics per account
+* with the exception of SMS messages, Amazon SNS messages can contain up to **256KB**  of text data
+    * includes XML, JSON, and unformatted text
+* SNS subscriptions support multiple delivery protocols
+    * Email
+    * Email as JSON
+    * HTTP
+    * HTTPS
+    * Amazon SQS 
+        * standard queues only
+    * Application (i.e. mobile app. push notifications)
+        * Amazon Device Messaging
+        * Apple Push Notification Service
+        * Google Cloud Messaging (GCM)
+        * Windows Push Notification Service
+        * Microsoft Push Notification Service
+        * Baidu Cloud Push (for Android devices in China)
+    * AWS Lambda
+    * SMS
+* Messages can be customized for each protocol above
+* messages could be delivered out of order
+* AWS does **NOT** guarantee delivery of messages to subscribed end-points (due to potential internet issues, or 
+email restrictions)
+    * SNS implements a 4-phase retry policy
+        1. retries with no delays in between attempts
+        2. retries with some minimum delay in between attempts
+        3. retries with some back-off model (linear or exponential)
+        4. retries with some maximum delay between attempts
+
+## Simple Email Service vs SNS
+| SES | SNS |
+|:---:|:---:|
+| Email messaging service  | pub/sub messaging services (formats include: SMS,HTTP,SQS,email) |
+| Can trigger Lambdas or SNS notification  | can trigger Lambda function |
+| Can be used for incoming or outgoing email  | Can fan out messages to large number of recipients  |
+| An email address is all that is required to start sending messages to a user | Consumers must subscribe to a topic to receive the notifications |
+
+
+## Kinesis
+* kinesis data streams
+    * you manually configure stream sizes and shard counts at creation time
+    * partitions data into shards (data must have a partition key to decide which shard to use)
+    * **data can be retained in a shard for 24 hours up to 7 days**
+    * you can write an application to consume the stream
+        * typically runs on EC2
+* kinesis firehose
+    * automatically scales to meet demand (no configuration of streams/shards necessary)
+    * can optionally use Lambdas to process/transform streams before storing the data
+    * no data retention
+* kinesis analytics
+    * lets you process streaming data (from kinesis streams or kinesis firehouse) using SQL
+    * results of the SQL can be sent to kinesis data stream, kinesis firehose (then onto S3, or Redshift, or Elasticsearch)
+    or AWS Lambda
+
+## Elastic Beanstalk
+* deploys and scales your web applications including the web application server platform where required
+* supports widely used programming technologies:
+    * Java
+    * PHP
+    * Python
+    * Ruby
+    * Go
+    * Docker (or multi-container docker)
+    * .NET
+    * Node.js
+    * Packer Builder
+    * Pre-Configured Docker
+        * Glassfish
+        * Go
+        * Python
+* provisions the underlying resources for you
+* can fully manage EC2 instances for you OR you can take full admin. control
+* updates, monitoring, metrics and health checks are all included
+* your app can be split into tiers (Web Tier, App. Tier, Database Tier)
+* you can do app updates as well as configuration updates
+* Deployment Policies:
+    * all at once
+        * service interruption while you update the entire environment at once
+        * to roll-back, you need to perform an additional all at once upgrade
+    * Rolling
+        * reduced capacity during development
+        * to roll-back, perform a further rolling update
+    * Rolling with additional batch
+        * maintains full capacity
+        * to roll back, perform a further rolling update
+    * Immutable
+        * preferred for mission critical production systems
+        * maintains full capacity
+        * to roll back, just delete the new instances and auto-scaling group
+* you pay for AWS resources EB configures for you (EB itself is free)
+* you can customize/configure your application environment by adding configuration files
+    * written in YAML or JSON
+    * they have a .config extension
+    * config files are saved to the `.ebextension` folder
+        * this folder must be at the top level dir of your app. source code bundle
+* two different options for launching your RDS instance:
+    * launch within EB
+        * when you terminate the EB environment, the DB is also terminated
+        * quick and easy to add your DB and get started
+        * suitable for Dev and Test environments only
+    * launch outside of EB
+        * additional config steps required
+            * security group and DB connection information
+            * suitable for prod environments, more flexible
+            * allows connections from multiple EB environments
+                * you can tear down the app stack without impacting the DB
+
+## CI/CD
+* continuous integration
+    * **integrating or merging code changes** frequently
+        * at least once per da
+* continuous delivery
+    * **about automating the build, test and deployment functions**
+        * human intervention is typically needed to approve code deployment
+* continuous deployment
+    * **fully automates the entire release process**
+        * code is deployed into production as soon as it has successfully passed through the release pipeline
+* CodeCommit
+    * private GIT repository
+* CodeBuild
+    * compiles code, runs tests, packages code
+    * uses `buildspec.yml` to define the build commands and settings used by CodeBuild to run your build
+        * buildspec settings can be supplied or overridden in the CodeBuild web console (or via CLI)
+        * if build fails, you can check logs in the CodeBuild console or view complete logs in Cloudwatch
+* CodeBuild with Docker (commands for pushing images to the ECR repository)
+    * `docker build -t MYDOCKERREPO .`
+        * builds a docker image from a Dockerfile and tags it 
+    * `docker tag mydockerrepo:latest 111222333444.dkr.ecr.us-east-1.amazonaws.com/mydockerrepo`
+        * tags the image so it can be pushed to your ECR repository
+    * `docker push 11122233344.dkr.ecr.us-east-1.amazonaws.com/mydockerrepo:latest`
+        * pushes your image into the ECR repository

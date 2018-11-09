@@ -2053,8 +2053,9 @@ series analytics, feed real-time dashboards, and create real-time metrics
         * can optionally use Lambdas to process/transform data streams before storing the data
         * no data retention
 * kinesis analytics
-    * lets you process streaming data (from kinesis streams or kinesis firehose) using SQL
-    * results of the SQL are sent to kinesis stream and then onto S3, or Redshift, or Elasticsearch 
+    * lets you process streaming data (from kinesis streams or kinesis firehouse) using SQL
+    * results of the SQL can be sent to kinesis data stream, kinesis firehose (then onto S3, or Redshift, or Elasticsearch)
+    or AWS Lambda
 
 
 
@@ -2073,9 +2074,14 @@ infrastructure environments easily
 
 ## Beanstalk key architecture components
 * Applications are the high level structure in beanstalk
+    * An Elastic Beanstalk application is a logical collection of Elastic Beanstalk components, including environments, 
+    versions, and environment configurations
+* Environment
+    * An environment is a version that is deployed onto AWS resources. Each environment runs only a single application 
+    version at a time, however you can run the same version or different versions in many environments at the same time 
 * Either you entire application is one EB application OR
     * each logical component of your application can be a EB application OR
-     * a EB environment within an application
+        * an EB environment within an application
 * Applications can have multiple environments (Prod, Staging, Dev, V1,V2,etc) or functional type (front-end, back-end)
 * Environments are either single instances or scalable
 * Environments are either web server environments or worker environments
@@ -2196,14 +2202,14 @@ infrastructure environments easily
     * Python
     * Ruby
     * Go
-    * Docker
+    * Docker (or Multi-Container Docker)
     * .NET
     * Node.js
-* and application server platforms:
-    * Tomcat
-    * Passenger
-    * Puma
-    * IIS
+    * ElasticBeanstalk Packer Builder
+* Pre-Configured Docker
+    * Glassfish
+    * Go
+    * Python
 * provisions the underlying resources for you
 * can fully manage EC2 instance for you OR you can take full administrative control
 * updates, monitoring, metrics and health checks all included    
@@ -2457,11 +2463,11 @@ hooks:
         * if the build fails, you can check logs in the CodeBuild console or view complete logs in CloudWatch
 * CodeBuild with Docker
     * know docker commands to build,tag and push your docker image to the ECR Repository:
-        * `docker build -t MYIMAGEREPO .`
-            * builds a docker image from a Dockerfile
-        * `docker tag 111222333444.dkr.ecr.us-east-1.amazonaws.com/my-docker-repo`
+        * `docker build -t MYDOCKERREPO .`
+            * builds a docker image from a Dockerfile and tags it 
+        * `docker tag mydockerrepo:latest 111222333444.dkr.ecr.us-east-1.amazonaws.com/mydockerrepo`
             * tags the image so it can be pushed to your ECR repository
-        * `docker push 11122233344.dkr.ecr.us-east-1.amazonaws.com/my-docker-repo:latest`
+        * `docker push 11122233344.dkr.ecr.us-east-1.amazonaws.com/mydockerrepo:latest`
             * pushes your image into the ECR repository
 * CodeDeploy - automated deployment to EC2, on premise systems, or Lambda
     * can be used as part of a Continuous Delivery or Continuous Deployment process
