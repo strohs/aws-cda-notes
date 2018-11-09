@@ -2297,6 +2297,78 @@ also automates the release process as well
 * it can compile your code
 * run some basic tests
 * can create software packages that are ready to deploy to your environment
+* uses a `buildspec.yaml` file to configure the build process
+```
+version: 0.2
+
+run-as: Linux-user-name
+
+env:
+  variables:
+    key: "value"
+    key: "value"
+  parameter-store:
+    key: "value"
+    key: "value"
+            
+phases:
+  install:
+    run-as: Linux-user-name
+    commands:
+      - command
+      - command
+    finally:
+      - command
+      - command
+  pre_build:
+    run-as: Linux-user-name
+    commands:
+      - command
+      - command
+    finally:
+      - command
+      - command
+  build:
+    run-as: Linux-user-name
+    commands:
+      - command
+      - command
+    finally:
+      - command
+      - command
+  post_build:
+    run-as: Linux-user-name
+    commands:
+      - command
+      - command
+    finally:
+      - command
+      - command
+artifacts:
+  files:
+    - location
+    - location
+    - name
+  discard-paths: yes
+  base-directory: location
+  secondary-artifacts:
+    artifactIdentifier:
+      files:
+        - location
+        - location
+      discard-paths: yes
+      base-directory: location
+    artifactIdentifier:
+      files:
+        - location
+        - location
+      discard-paths: yes
+      base-directory: location
+cache:
+  paths:
+    - path
+    - path
+```
 
 ## CodeDeploy
 * automated application deployment service
