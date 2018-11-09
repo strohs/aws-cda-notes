@@ -502,6 +502,10 @@ dealing with other services
         * IAM users/roles that can administer (but not use the key)
     * define key **usage permissions**
         * IAM users/roles that can use the key to encrypt and decrypt data
+* Envelope Encryption
+    * know that the *customer master key* does the following:
+        * **used to decrypt the data key (aka envelope key)**
+        * **data key is then used to decrypt the data**
 * KMS CLI (common commands)
     * `aws kms encrypt`
         * encrypts plaintext into ciphertext by using a CMK
@@ -516,3 +520,30 @@ dealing with other services
         * Enables automatic rotation of the key material for the specified customer master key (CMK)
             * AWS KMS generates new cryptographic material for the CMK every year
         * You cannot perform this operation on a CMK in a different AWS account
+
+## SQS
+* SQS is a distributed message queueing system
+* allows you to decouple components of an application so they are independent
+* poll based (not push)
+* Standard Queues (default)
+    * best effort ordering
+    * messages delivered at least once
+        * need to take into account if messages are delivered more than once
+    * unlimited throughput
+* FIFO Queues
+    * ordering is strictly preserved
+    * messages are delivered once, no duplicates
+        * good for banking transactions which need to happen in strict order
+* Visibility Timeout
+    * **default is 30 seconds**
+    * **max is 12 hours**
+    * call `ChangeMessageVisibility` to specify a new timeout value
+* Short Polling (default)
+    * returns immediately, even if no messages are in the queue
+* Long Polling
+    * only returns a response if a message is in the queue or the timeout is reached
+    * ```ReceiveMessage(waitTimeInSecs)``` - enables long polling
+    * **max poll wait time = 20 seconds**
+* messages are 256KB in size
+* **Messages can be kept in the queue from 1 minute to 14 days**
+    * default retention period is **4 days**
