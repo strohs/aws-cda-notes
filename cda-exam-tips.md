@@ -692,3 +692,41 @@ email restrictions)
         * tags the image so it can be pushed to your ECR repository
     * `docker push 11122233344.dkr.ecr.us-east-1.amazonaws.com/mydockerrepo:latest`
         * pushes your image into the ECR repository
+
+
+## CloudFormation
+* CloudFormation allows you to manage, configure and provision AWS infrastructure as code
+* written in YAML or JSON
+* Remember the main sections of a template
+    * **Paramters** - input custom values for use in the template
+    * **Conditions** - provision resources based on the environment
+    * **Resources** - mandatory - the AWS resources to create
+    * **Mappings** - create custom mappings like Region:AMI
+    * **Transforms**
+        * used to run macros that transform your template or import other templates
+            * code to import resides in S3
+        * used to specify serverless transforms `AWS::Serverless-2016-10-31`
+* CloudFormation itself is free (the resources it creates are not)
+* **SAM** is the serverless application model
+* allows you to define and provision serverless applications using CloudFormation
+* uses the SAM CLI Commands to package and deploy your serverless app
+    * `sam package` - packages your application and uploads it to S3
+    * `sam deploy` - deploys your serverless app using CloudFormation
+    
+## CloudWatch
+* a monitoring service to monitor your AWS resources, as well as the applications that you run on AWS
+* **Host Level Metrics** consist of:
+    * CPU
+    * Network
+    * Disk (i/o)
+    * Status Check (health check)
+    * **any other type of metric is considered a custom metric**
+        * ram utilization
+        * amount of disk space left
+        * **minimum granularity for a custom metric is 1 minute**
+* cloudwatch logs are stored indefinitely unless configured otherwise
+* you can still retrieve logs from any EC2  or ELB instance after its termination
+* Metric Granularity:
+    * 1 minute (minimum) for detailed monitoring
+    * 5 minutes for standard monitoring
+* CloudWatch can be used on-premise (need to install SSM agent and CloudWatch Agent)

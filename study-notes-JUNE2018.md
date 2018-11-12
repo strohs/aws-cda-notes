@@ -550,6 +550,10 @@ charged for the complete hour
             * each write to DB involves a write to the cache
             * elasticache node failure means that data is missing until added or updated in the database
             * wasted resources if most of the data is never used
+* VPC Flow Logs
+    * a feature that enables you to capture information about the IP traffic going to and from network interfaces 
+    in your VPC
+    * Flow log data can be published to Amazon CloudWatch Logs and Amazon S3
 
 
 S3
@@ -865,7 +869,7 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
 
 ## AWS Systems Manager Parameter Store
 * provides secure hierarchical storage for configuration data management and secrets management
-* you can store data such as passwords, database strings, licencse codes...
+* you can store data such as passwords, database strings, license codes...
 * can be stored as plaintext or encrypted
 * can reference values using the unique name you specified when creating the parameter
 * offered at no additional charge
@@ -1079,7 +1083,7 @@ services, such as applications running on EC2, code running on AWS Lambda, or an
     * select supported HTTP methods (verbs... GET POST DELETE PUT OPTIONS etc...)
     * set security (if needed)
     * choose target (such as EC2, Lambda, DynamoDB, etc..)
-    * Set request and response transformations
+    * Set request and response transformations (if needed)
         1. **Method Request**
             * this is for information about thr method's authorization settings and the parameters it can receive
                 * e.g. query strings, headers, body "shape", content-types
@@ -1096,6 +1100,9 @@ services, such as applications running on EC2, code running on AWS Lambda, or an
     * you can have a "prod" stage, "dev" stage, "test" stage, "v1" etc...
     * you can use a custom domain
     * supports AWS Certificate Manager (free SSL/TLS certs!)
+    * stage variables:
+        * stage variables are name value pairs that you define associated with a deployment stage of an API. 
+        They act like environment variables and can be used in your API set-up and mapping templates
 
 ## What is API Caching?
 You can enable **API Caching** in API Gateway to cache your endpoint's response. With caching, you can reduce
@@ -1715,6 +1722,9 @@ under another key
     * know that the *customer master key* does the following:
         * **used to decrypt the data key (aka envelope key)**
         * **envelope key is then used to decrypt the data**
+* KMS API Limits
+    * Decrypt - 5500 rps
+    * encrypt - 10000 rps
 
 
 Simple Queue Service (SQS)
@@ -2297,6 +2307,9 @@ also automates the release process as well
 * it can compile your code
 * run some basic tests
 * can create software packages that are ready to deploy to your environment
+* example CLI commands:
+    * `aws codebuild start-build` - starts a new build, can provide path to a different buildspec.yaml
+    * `aws codebuild update-project` - updates a project with new buildpsec
 * uses a `buildspec.yaml` file to configure the build process
 ```
 version: 0.2
@@ -2733,7 +2746,7 @@ S3 bucket. Generates a template file that can be used by the sam deploy command
 
 CloudWatch
 ================================================================================
-* cloudWatch is a monitoring service for monotoring your AWS resources, as well as the applications that run
+* cloudWatch is a monitoring service for monitoring your AWS resources, as well as the applications that run
 on AWS
 * it can monitor things like:
     * compute
@@ -2767,8 +2780,12 @@ on AWS
         
 * CloudWatch will store logs indefinitely, unless you configure it otherwise
 * **you can retrieve data from any terminated EC2 or ELB instance after its termination**
+
+## Metrics
+* think of a metric as a variable to monitor, and the data points as the values of that variable over time
+
  
-## metric granularity
+### metric granularity
 * depends on the AWS service
 * many default metrics for many default services are 1 minute, but it can be 3 or 5 minutes depending on the
 service
@@ -2779,6 +2796,22 @@ service
 * this can include EC2 CPU Utilization, ELB latency or even charges on your AWS bill
 * you can set the appropriate thresholds in which to trigger the alarms and also set what actions should be
 taken if an alarm state is reached
+* actions include:
+
+## CloudWatch Events
+* Amazon CloudWatch Events delivers a near real-time stream of system events that describe changes in AWS resources
+
+## CloudWatch Logs
+* you must install the CloudWatch logs agent on an EC2 instance (already installed on Elastic Beanstalk instances)
+    * `sudo yum update`
+    * `sudo yum install -y awslogs`
+    * configure `/etc/awslogs/awslogs.conf` to configure the logs to track
+    * start the agent
+
+### Logs Metric Filters
+* You can use metric filters to monitor events in a log group as they are sent to CloudWatch Logs
+* You can monitor and count specific terms or extract values from log events and associate the results with a **metric**
+* these metrics can trigger CloudWatch Alarms
 
 ## CloudWatch exam tips
 * cloudwatch is a monitoring service to monitor your AWS resources, as well as the applications that you
@@ -2798,3 +2831,15 @@ run on AWS
     * 1 minute (minimum) for detailed monitoring
     * 5 minutes for standard monitoring
 * CloudWatch can be used on-premise (need to install SSM agent and CloudWatch agent)
+* CloudWatch logs can be exported to S3 
+* CloudWatch logs can be streamed to Lambda or Elasticsearch
+* **CloudWatch monitors performance, cloudtrail monitors API calls throughout AWS**
+
+
+
+CloudTrail
+===============
+* tracks user activity and API usage across your account
+* provides event history of actions taken in AWS Console,  AWS SDKs, CLIs, plus others
+* helps simplify security analysis
+
