@@ -142,7 +142,7 @@ temporary AWS credentials allowing them to assume an IAM role
 
 
 EC2
-=======================================================================================================================
+====================================================================================================================
 ## EC2 Instances
 * **On Demand** - you pay a fixed rate, by the hour (or second) with no commitment
     * perfect for users that want low cost and flexibility of AWS EC2 without any up-front payment or long term 
