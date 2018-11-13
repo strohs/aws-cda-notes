@@ -37,6 +37,10 @@ temporary AWS credentials allowing them to assume an IAM role
 * cognito acts as an identity broker, handling all interaction with Web Identity Providers
 * cognito uses **Push Synchronization** to send a silent push notification of user data updates to multiple devices
 types associated with a user ID
+    * This data is associated with an Amazon Cognito identity, so that it can be accessed across logins and devices
+* Cognito sync enables cross-device syncing of application related data. You can use it to sync profile data across
+mobile devices and the web
+* cognito events enable you to trigger a lambda function when a user updates data
 
 ### EC2
 * EC2 instance types:
@@ -54,7 +58,7 @@ types associated with a user ID
         * useful for regulatory requirements that may not support multi-tenant virtualization
         * can be purchased On-Demand (hourly)
         * can be purchased as a reservation for up to 70% off the On-Demand price
-* **FIGHT Dr McPIX**
+* **FIGHT Dr McPX**
 
 #### Elastic Block Storage (EBS)
 * EBS Types

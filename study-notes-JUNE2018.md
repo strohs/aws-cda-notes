@@ -105,16 +105,19 @@ experience across all mobile devices
 * cognito tracks the association between user identity and the various different devices they sign-in from
 * in order to provide a seamless user experience for your application, cognito uses *push synchronization* to push
 updates and synchronize user data across multiple devices
+    * This data is associated with an Amazon Cognito identity, so that it can be accessed across logins and devices
 * SNS is used to send a silent push notification to all the devices associated with a given user identity whenever
 data stored in the cloud changes
 
-#### Cognito Streams
+##### Cognito Streams
+* used to stream user datasets to kinesis
 * gives developers control and insight into their data stored in Amazon Cognito
-* Cogntio can push data to a Kinesis stream in real-time
-* all of your sync data can be moved Kineses, which can then be streamed to a data-wharehouse tool, like Redshift
+* Cognito can push data to a Kinesis stream in real-time
+* all of your **sync data** can be moved to Kinesis, which can then be streamed to a data-warehouse tool, like Redshift
 
 #### Cognito Events
 * enable you to execute Lambda functions in response to important events within Cognito (called a Sync Trigger)
+* You can use the Sync Trigger event to take an action when a user updates data
 
 ## Advanced IAM Exam Tips
 * federation allows users to authenticate with a Web Identity Provider (Google,Facebook,Amazon...)
