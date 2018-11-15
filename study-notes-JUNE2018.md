@@ -860,7 +860,7 @@ variations of your Lambda in your development workflow, such as dev, beta, prod 
     points to version 2. If you find something wrong, you can easily roll back the production version to version 1
     by remapping the PROD alias so that it points to version 1
 
-## Best practices
+## Best practices for writing Lambdas
 * Separate the Lambda handler (entry point) from your core logic - helps with testing
 * Take advantage of execution context reuse to improve performance of your function
 * use Lambda environment variables to pass operational parameters to your function
@@ -1050,7 +1050,6 @@ X-Ray integrates with the following AWS services:
 * **Go**
 * **Node.js**
 * **Python**
-* **Ruby**
 * **.Net**
 
 ## X-Ray Exam Tips
@@ -1103,9 +1102,12 @@ services, such as applications running on EC2, code running on AWS Lambda, or an
     * you can have a "prod" stage, "dev" stage, "test" stage, "v1" etc...
     * you can use a custom domain
     * supports AWS Certificate Manager (free SSL/TLS certs!)
-    * stage variables:
+    
+* stage variables:
         * stage variables are name value pairs that you define associated with a deployment stage of an API. 
         They act like environment variables and can be used in your API set-up and mapping templates
+        * they are referenced in your configuration using a `${stageVariables.KEY-NAME}` syntax
+        * i.e. configuring a Endpoint URL value as `http://${stageVariables.url}`
 
 ## What is API Caching?
 You can enable **API Caching** in API Gateway to cache your endpoint's response. With caching, you can reduce
@@ -1179,7 +1181,7 @@ CORS on API Gateway
 * know that it is possible for API gateway to be a SOAP webservice passthrough
 * import API's using Swagger 2.0 definition files
 * API Gateway can be throttled
-    * default limits are 10,000 RPS or 5000 concurrent requests
+    * **default limits are 10,000 RPS or 5000 concurrent requests**
         * the limits can be increased upon request to the AWS Support Center
 
 
@@ -2464,7 +2466,7 @@ Hooks:
 ```
 
 #### Appspec EC2/On Premises deployments
-* can be written in YAML or JSON
+* must be written in YAML (JSON not supported for EC2 deployments)
 * must be placed in the root directory of your revision, otherwise deployments will fail
 * `version` - reserved (allows 0.0)
 * `os` - the os version you are using: either *linux* or *windows*

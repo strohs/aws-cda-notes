@@ -675,7 +675,7 @@ email restrictions)
 ## CI/CD
 * continuous integration
     * **integrating or merging code changes** frequently
-        * at least once per da
+        * at least once per day
 * continuous delivery
     * **about automating the build, test and deployment functions**
         * human intervention is typically needed to approve code deployment
