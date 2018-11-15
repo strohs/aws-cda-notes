@@ -1804,6 +1804,14 @@ process it
         * OR the long poll times out
 * long polling can save you money, since you are not rapidly polling the queue for a message
 
+### Message Timers
+* let you set the invisibility period for individual messages
+* 0 secs to 15 minutes
+
+### Delay Queues
+* let you set the default invisibility period for every message put into the queue
+* only for Standard Queues
+
 ## SQS Exam Tips
 * SQS is a distributed message queueing system
 * allows you to decouple the components of an application so that they are independent
@@ -2172,6 +2180,12 @@ infrastructure environments easily
     * they must be saved inside a folder called **.ebextensions**
         * the .ebextensions folder must be included in the top-level directory of your application source bundle
     * these config files can be placed inside source control along with the rest of your app. source code
+* you can save your environment configurations in a S3 bucket
+    * they can then be re-used for other environments
+    * they take precedence over any .config(s) in the .ebextensions folder
+* Environment Manifest **env.yaml**
+    * this file configures the environment name, solution stack, and environment links to use for creating your environment
+    * this file is placed in the root directory of your application .zip 
 
 #### example healthcheck .config
 * configures an Elastic Load Balancer to make a HTTP request to `/health` om the ec2 instances it is fronting
