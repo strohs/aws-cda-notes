@@ -2723,7 +2723,7 @@ Outputs:
 ## Serverless Application Model (SAM)
 * **SAM** is an extension to CloudFormation used to define serverless applications
 * it provides simplified syntax for defining serverless resources: APIs, Lambdas, DynamoDB Tables
-* you use the SAM CLI to package your deployment code, upload it to S# and deploy your serverless application
+* you use the SAM CLI to package your deployment code, upload it to S3 and deploy your serverless application
 
 ### SAM CLI Commands
 * `sam package` - uses a yaml template written in SAM to package your serverless application and upload it to a
