@@ -1714,6 +1714,7 @@ under another key
         * `aws kms decrypt` --ciphertext-blob fileb://encryptedsecret.txt --output text --query Plaintext | base64 --decode > decryptedsecret.txt
             * Decrypts ciphertext
                 * Ciphertext is plaintext that has been previously encrypted
+            * AWS KMS uses your CMK to decrypt the data key and then it returns the plaintext data key
         * `aws kms re-encrypt` --destination-key-id NEW-CMK-ID --ciphertext-blob fileb://encryptedsecret.txt | base64 > newencryption.txt
             * Encrypts data on the server side with a new customer master key (CMK) without exposing the plaintext 
             of the data on the client side
@@ -2769,7 +2770,7 @@ CloudWatch
 on AWS
 * it can monitor things like:
     * compute
-        * autoscaling groups
+        * auto-scaling groups
         * elastic load balancers
         * Route53 health checks
     * Storage and Content delivery
