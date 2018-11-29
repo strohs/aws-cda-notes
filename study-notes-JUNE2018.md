@@ -1681,7 +1681,7 @@ under another key
 
 ## KMS Exam Tips
 * **The Customer Master Key (CMK)** consists of:
-    * alias
+    * an alias
     * creation date
     * description
     * key state (enabled or disabled)
